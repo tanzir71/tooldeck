@@ -179,7 +179,32 @@ pub fn build_registry() -> Registry {
     for meta in m6_job_catalog() {
         registry.register(Arc::new(CatalogJobTool { meta }));
     }
+    for meta in workflow_catalog() {
+        registry.register(Arc::new(CatalogJobTool { meta }));
+    }
     registry
+}
+
+fn workflow_catalog() -> Vec<ToolMeta> {
+    crate::workflows::DEFINITIONS
+        .iter()
+        .map(|definition| ToolMeta {
+            id: definition.id.into(),
+            name: definition.name.into(),
+            summary: definition.summary.into(),
+            category: Category::Workflow,
+            tier: Tier::Core,
+            icon: definition.icon.into(),
+            keywords: vec![
+                "workflow".into(),
+                "recipe".into(),
+                definition.input_hint.into(),
+            ],
+            form: None,
+            destructive: false,
+            long_running: false,
+        })
+        .collect()
 }
 
 struct CatalogJobTool {

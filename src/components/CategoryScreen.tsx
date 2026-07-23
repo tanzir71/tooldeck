@@ -26,6 +26,11 @@ const categoryCopy: Partial<
     title: "Images",
     description: "Small, focused image tasks with safe defaults.",
   },
+  workflow: {
+    title: "Workflows",
+    description:
+      "Named local pipelines that connect notes, time, capture, media, and documents.",
+  },
 };
 
 export function CategoryScreen({ category }: CategoryScreenProps) {

@@ -7,18 +7,23 @@ mod platform;
 mod registry;
 mod safety;
 mod time;
+mod workflows;
 
 use std::fs;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use db::{Database, DbStatus};
 use jobs::{JobRecord, JobRunner};
 use notes::{NoteDocument, NoteSummary, NotesService};
 use registry::{Registry, ToolCtx, ToolInput, ToolMeta, ToolOutcome};
+use rusqlite::OptionalExtension;
 use safety::{SafetyRecord, SafetyService};
+use serde::Serialize;
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager, PhysicalPosition, Position, Runtime, WebviewWindow};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use time::{IdleDecision, Project, TimeEntry, TimeService, TimerReport};
+use workflows::{WorkflowDefinition, WorkflowPlan, WorkflowRunResult};
 
 #[tauri::command]
 fn tool_catalog(registry: tauri::State<'_, Registry>) -> Vec<ToolMeta> {
@@ -297,6 +302,130 @@ fn idle_seconds() -> f64 {
     platform::idle_seconds()
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ActivitySample {
+    app_name: String,
+    window_title: Option<String>,
+    permission: platform::ActivityPermission,
+    recorded: bool,
+    time_entry_id: Option<i64>,
+}
+
+#[tauri::command]
+fn activity_permission_status() -> platform::ActivityPermission {
+    platform::activity_permission()
+}
+
+#[tauri::command]
+fn activity_request_permission() -> platform::ActivityPermission {
+    platform::request_activity_permission()
+}
+
+#[tauri::command]
+fn activity_sample(database: tauri::State<'_, Database>) -> Result<ActivitySample, String> {
+    let active = platform::active_window()?;
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|error| error.to_string())?
+        .as_secs() as i64;
+    let time_entry_id = database.with_connection(|connection| {
+        let time_entry_id = connection
+            .query_row(
+                "SELECT id FROM time_entries WHERE stopped_at IS NULL
+                 ORDER BY started_at DESC LIMIT 1",
+                [],
+                |row| row.get::<_, i64>(0),
+            )
+            .optional()
+            .map_err(|error| error.to_string())?;
+        if let Some(entry_id) = time_entry_id {
+            connection
+                .execute(
+                    "INSERT INTO app_activity(
+                        time_entry_id, app_name, window_title, captured_at
+                     ) VALUES (?1, ?2, ?3, ?4)",
+                    rusqlite::params![
+                        entry_id,
+                        &active.app_name,
+                        active.window_title.as_deref(),
+                        now
+                    ],
+                )
+                .map_err(|error| error.to_string())?;
+        }
+        Ok(time_entry_id)
+    })?;
+    Ok(ActivitySample {
+        app_name: active.app_name,
+        window_title: active.window_title,
+        permission: active.permission,
+        recorded: time_entry_id.is_some(),
+        time_entry_id,
+    })
+}
+
+#[tauri::command]
+fn workflows_list() -> Vec<WorkflowDefinition> {
+    workflows::DEFINITIONS.to_vec()
+}
+
+#[tauri::command]
+fn workflow_run(
+    app: tauri::AppHandle,
+    runner: tauri::State<'_, JobRunner>,
+    notes: tauri::State<'_, NotesService>,
+    database: tauri::State<'_, Database>,
+    id: String,
+    input: serde_json::Value,
+) -> Result<WorkflowRunResult, String> {
+    match workflows::plan(&database, &notes, &id, &input)? {
+        WorkflowPlan::Job {
+            kind,
+            input,
+            message,
+        } => {
+            let job = runner.enqueue(app, kind, input)?;
+            Ok(WorkflowRunResult {
+                status: "job".into(),
+                message,
+                job_id: Some(job.id),
+                next_tool_id: None,
+                prefill: None,
+                context: None,
+            })
+        }
+        WorkflowPlan::NextTool {
+            tool_id,
+            prefill,
+            message,
+        } => Ok(WorkflowRunResult {
+            status: "nextTool".into(),
+            message,
+            job_id: None,
+            next_tool_id: Some(tool_id),
+            prefill: Some(prefill),
+            context: None,
+        }),
+        WorkflowPlan::Done { message, context } => Ok(WorkflowRunResult {
+            status: "done".into(),
+            message,
+            job_id: None,
+            next_tool_id: None,
+            prefill: None,
+            context: Some(context),
+        }),
+        WorkflowPlan::Degraded { message } => Ok(WorkflowRunResult {
+            status: "degraded".into(),
+            message,
+            job_id: None,
+            next_tool_id: None,
+            prefill: None,
+            context: None,
+        }),
+    }
+}
+
 fn tray_image() -> tauri::image::Image<'static> {
     const WIDTH: u32 = 18;
     const HEIGHT: u32 = 18;
@@ -369,6 +498,7 @@ pub fn run() {
             let jobs = JobRunner::new(data_root.join("exports"))?;
             let safety = SafetyService::new(data_root.join("exports"))?;
             notes.reindex(&database)?;
+            workflows::install_defaults(&database)?;
             app.manage(database);
             app.manage(notes);
             app.manage(jobs);
@@ -446,6 +576,11 @@ pub fn run() {
             timer_merge,
             timer_reconcile_idle,
             idle_seconds,
+            activity_permission_status,
+            activity_request_permission,
+            activity_sample,
+            workflows_list,
+            workflow_run,
             show_floating_note,
             job_run,
             jobs_list,

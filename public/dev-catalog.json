@@ -537,5 +537,89 @@
     ] },
     "destructive": false,
     "longRunning": true
+  },
+  {
+    "id": "workflow-billable-document",
+    "name": "Billable → document",
+    "summary": "Turn billable time into an invoice, timesheet, or activity report.",
+    "category": "workflow",
+    "tier": "core",
+    "icon": "file-output",
+    "keywords": ["workflow", "recipe", "billable", "invoice", "report"],
+    "form": null,
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "workflow-documentation",
+    "name": "Documentation companion",
+    "summary": "Style a project note into a clean project document or handoff PDF.",
+    "category": "workflow",
+    "tier": "core",
+    "icon": "square-pen",
+    "keywords": ["workflow", "recipe", "note", "spec", "handoff"],
+    "form": null,
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "workflow-research",
+    "name": "Research companion",
+    "summary": "Capture an extracted or OCR excerpt in a source-linked local note.",
+    "category": "workflow",
+    "tier": "core",
+    "icon": "captions",
+    "keywords": ["workflow", "recipe", "ocr", "source", "excerpt"],
+    "form": null,
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "workflow-context-switch",
+    "name": "Context switcher",
+    "summary": "Switch the active project context for notes, time, and capture.",
+    "category": "workflow",
+    "tier": "core",
+    "icon": "arrow-left-right",
+    "keywords": ["workflow", "recipe", "project", "active app", "context"],
+    "form": null,
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "workflow-standup",
+    "name": "Meeting / standup log",
+    "summary": "Append a timestamped bullet to today’s daily note.",
+    "category": "workflow",
+    "tier": "core",
+    "icon": "clock",
+    "keywords": ["workflow", "recipe", "meeting", "daily note", "log"],
+    "form": null,
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "workflow-capture-attach",
+    "name": "Capture → annotate → attach",
+    "summary": "Open region capture with a target note already in context.",
+    "category": "workflow",
+    "tier": "core",
+    "icon": "camera",
+    "keywords": ["workflow", "recipe", "screenshot", "note", "markup"],
+    "form": null,
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "workflow-media-inline",
+    "name": "Media micro-task inline",
+    "summary": "Turn a short clip into a capped GIF and attach it to a note.",
+    "category": "workflow",
+    "tier": "core",
+    "icon": "play",
+    "keywords": ["workflow", "recipe", "video", "gif", "attach"],
+    "form": null,
+    "destructive": false,
+    "longRunning": false
   }
 ]

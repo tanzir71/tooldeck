@@ -11,13 +11,16 @@ import { Rail } from "./components/Rail";
 import { TimeWorkspace } from "./components/TimeWorkspace";
 import { ToolWorkspace } from "./components/ToolWorkspace";
 import { TopBar } from "./components/TopBar";
+import { WorkflowWorkspace } from "./components/WorkflowWorkspace";
 import { fetchCatalog } from "./lib/registry";
+import { sampleActivity } from "./lib/workflows";
 import { useAppStore } from "./stores/app";
 
 export function App() {
   const catalog = useAppStore((state) => state.catalog);
   const category = useAppStore((state) => state.category);
   const selectedToolId = useAppStore((state) => state.selectedToolId);
+  const toolPrefill = useAppStore((state) => state.toolPrefill);
   const setCatalog = useAppStore((state) => state.setCatalog);
   const setCatalogError = useAppStore((state) => state.setCatalogError);
   const setPaletteOpen = useAppStore((state) => state.setPaletteOpen);
@@ -92,6 +95,14 @@ export function App() {
     return () => unlisten?.();
   }, [setPaletteOpen]);
 
+  useEffect(() => {
+    if (!isTauri()) return;
+    const sample = () => void sampleActivity().catch(() => undefined);
+    const timer = window.setInterval(sample, 60_000);
+    sample();
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <div className="app-shell">
       <Rail />
@@ -107,8 +118,14 @@ export function App() {
             <NotesWorkspace />
           ) : selectedTool.id === "timer-start" ? (
             <TimeWorkspace />
+          ) : selectedTool.category === "workflow" ? (
+            <WorkflowWorkspace key={selectedTool.id} tool={selectedTool} />
           ) : (
-            <ToolWorkspace key={selectedTool.id} tool={selectedTool} />
+            <ToolWorkspace
+              key={selectedTool.id}
+              tool={selectedTool}
+              prefill={toolPrefill}
+            />
           )
         ) : category === "home" ? (
           <HomeScreen />

@@ -141,16 +141,14 @@ impl JobRunner {
         if is_cancelled(app, id)? {
             return Ok(());
         }
-        if kind.starts_with("screenshot-") {
-            if let Some(note_path) = input
-                .get("note_path")
-                .and_then(Value::as_str)
-                .filter(|value| !value.trim().is_empty())
-            {
-                let notes = app.state::<NotesService>();
-                let database = app.state::<Database>();
-                notes.attach_file(&database, note_path, output)?;
-            }
+        if let Some(note_path) = input
+            .get("note_path")
+            .and_then(Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+        {
+            let notes = app.state::<NotesService>();
+            let database = app.state::<Database>();
+            notes.attach_file(&database, note_path, output)?;
         }
         update_job(
             app,

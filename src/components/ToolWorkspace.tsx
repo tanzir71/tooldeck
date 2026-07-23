@@ -9,6 +9,7 @@ import { Shortcut } from "./Shortcut";
 
 interface ToolWorkspaceProps {
   tool: ToolMeta;
+  prefill?: ToolInput | null;
 }
 
 type RunState =
@@ -17,20 +18,22 @@ type RunState =
   | { kind: "success"; outcome: ToolOutcome }
   | { kind: "error"; message: string };
 
-function initialValues(tool: ToolMeta): ToolInput {
+function initialValues(tool: ToolMeta, prefill?: ToolInput | null): ToolInput {
   const values: ToolInput = {};
   for (const field of tool.form?.fields ?? []) {
     if (field.default !== undefined) values[field.key] = field.default;
     else if (field.type.control === "toggle") values[field.key] = false;
     else values[field.key] = "";
   }
-  return values;
+  return { ...values, ...prefill };
 }
 
-export function ToolWorkspace({ tool }: ToolWorkspaceProps) {
+export function ToolWorkspace({ tool, prefill }: ToolWorkspaceProps) {
   const setCategory = useAppStore((state) => state.setCategory);
   const setOutputCenterOpen = useAppStore((state) => state.setOutputCenterOpen);
-  const [values, setValues] = useState<ToolInput>(() => initialValues(tool));
+  const [values, setValues] = useState<ToolInput>(() =>
+    initialValues(tool, prefill),
+  );
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [runState, setRunState] = useState<RunState>({ kind: "idle" });
   const fields = tool.form?.fields ?? [];

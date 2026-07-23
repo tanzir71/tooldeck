@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0 — M7 connected workflows
+
+- Added a typed workflow planner with explicit job, next-tool, completed, and
+  recoverable-degradation outcomes.
+- Added one-click Billable → Document, Documentation Companion, Research
+  Companion, Context Switcher, Meeting / Standup Log, Capture → Annotate →
+  Attach, and Media Micro-task Inline workflows.
+- Added idempotently installed workflow definitions backed by local SQLite.
+- Added note-prefilled capture handoff and post-job note attachment for media
+  exports.
+- Added low-frequency foreground-app sampling linked to the running time entry.
+- Added permission-aware window-title capture, app-name-only degradation, and a
+  user-triggered Screen Recording access flow.
+- Added populated and missing-input workflow fixtures plus light/dark browser
+  acceptance for the workflow category and handoff states.
+
 ## 0.5.0 — M6 focused media and capture tools
 
 - Added precise video trim/crop, MP4/MOV/WebM conversion, capped GIF export,

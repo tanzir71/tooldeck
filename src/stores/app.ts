@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import type { Category, ToolMeta } from "../lib/registry";
+import type { Category, ToolInput, ToolMeta } from "../lib/registry";
 
 export type ThemePreference = "system" | "light" | "dark";
 
@@ -9,6 +9,7 @@ interface AppState {
   catalogLoading: boolean;
   catalogError: string | null;
   selectedToolId: string | null;
+  toolPrefill: ToolInput | null;
   category: Category | "home";
   paletteOpen: boolean;
   outputCenterOpen: boolean;
@@ -17,7 +18,7 @@ interface AppState {
   recentToolIds: string[];
   setCatalog: (catalog: ToolMeta[]) => void;
   setCatalogError: (message: string) => void;
-  selectTool: (tool: ToolMeta) => void;
+  selectTool: (tool: ToolMeta, prefill?: ToolInput) => void;
   setCategory: (category: Category | "home") => void;
   setPaletteOpen: (open: boolean) => void;
   setOutputCenterOpen: (open: boolean) => void;
@@ -56,6 +57,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   catalogLoading: true,
   catalogError: null,
   selectedToolId: null,
+  toolPrefill: null,
   category: "home",
   paletteOpen: false,
   outputCenterOpen: false,
@@ -66,9 +68,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ catalog, catalogLoading: false, catalogError: null }),
   setCatalogError: (message) =>
     set({ catalogError: message, catalogLoading: false }),
-  selectTool: (tool) =>
+  selectTool: (tool, prefill) =>
     set((state) => ({
       selectedToolId: tool.id,
+      toolPrefill: prefill ?? null,
       category: tool.category,
       paletteOpen: false,
       recentToolIds: [
@@ -80,6 +83,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({
       category,
       selectedToolId: null,
+      toolPrefill: null,
       paletteOpen: false,
     }),
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),

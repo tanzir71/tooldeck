@@ -74,7 +74,18 @@ Evidence:
         pixelation, and redaction
   - [x] Generated captures can be appended to a selected Markdown note and
         reindexed
-- [ ] M7 — Connected workflows
+- [x] M7 — Connected workflows
+  - [x] Seven named pipelines connect billable time, project notes, OCR
+        excerpts, project context, daily logs, capture, media, and exports
+  - [x] Workflow definitions are installed idempotently and routed through a
+        typed planner that returns job, next-tool, done, or degraded outcomes
+  - [x] Capture handoff carries the selected note into the capture tool; media
+        output can attach to a note after its background job completes
+  - [x] Low-frequency foreground-app sampling attaches to a running time entry
+        and stores window titles only with Screen Recording permission
+  - [x] App-linked tracking has an explicit user-triggered permission control
+        and degrades to app-name-only detail
+  - [x] Every workflow has a tested missing-input recovery path
 - [ ] M8 — Polish pass
 - [ ] M9 — Signed and notarized package
 
@@ -89,6 +100,7 @@ Evidence:
 | M4        |             4 |          4 |      4 |               4 |             4 |            5 |     4 |           4 | Pass |
 | M5        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 | M6        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
+| M7        |             4 |          5 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 
 M4 evidence:
 
@@ -135,4 +147,21 @@ M6 evidence:
   `artifacts/m6-media-output-light.png`, and
   `artifacts/m6-markup-dark.png`.
 - `make verify` passes with 36 Rust tests and the full frontend/lint/type/build
+  gate.
+
+M7 evidence:
+
+- Planner fixtures cover all seven recoverable missing-input states, plus
+  populated job, note, context-switch, standup, capture-handoff, and media
+  outcomes.
+- The native app launches with the CoreGraphics permission probe and
+  foreground sampler active; the sampler records only while a timer is
+  running.
+- Browser acceptance verifies seven discoverable workflow cards, successful
+  and degraded Context Switcher results, full dark-mode parity, and exact
+  preservation of `welcome-to-tooldeck.md` through the capture prefill handoff.
+- Screenshots: `artifacts/m7-workflows-light.png`,
+  `artifacts/m7-context-dark.png`, and
+  `artifacts/m7-capture-handoff-dark.png`.
+- `make verify` passes with 39 Rust tests and the full frontend/lint/type/build
   gate.

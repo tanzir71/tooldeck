@@ -1063,6 +1063,11 @@ button:disabled {
   color: var(--danger);
 }
 
+.inline-result.warning {
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  color: var(--warn);
+}
+
 .inline-result > div {
   display: flex;
   flex-direction: column;
@@ -1075,6 +1080,87 @@ button:disabled {
 
 .inline-result span {
   font-size: 10.5px;
+}
+
+.inline-link {
+  align-self: flex-start;
+  margin-top: 5px;
+  padding: 0;
+  background: transparent;
+  color: currentColor;
+  font-size: 10.5px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.workflow-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  color: var(--ink-muted);
+  font-size: 10px;
+}
+
+.workflow-steps svg {
+  opacity: 0.55;
+}
+
+.permission-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+.permission-card > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.permission-card strong {
+  display: block;
+  font-size: 11px;
+}
+
+.permission-card p {
+  margin: 3px 0 0;
+  color: var(--ink-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.permission-card .secondary-button {
+  flex: 0 0 auto;
+}
+
+.permission-loading {
+  color: var(--ink-muted);
+  font-size: 10.5px;
+}
+
+.permission-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  color: var(--warn);
+}
+
+.permission-icon.permission-on {
+  background: var(--success-soft);
+  color: var(--success);
 }
 
 .tool-actionbar {
