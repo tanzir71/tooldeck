@@ -7,33 +7,7 @@
     "tier": "core",
     "icon": "square-pen",
     "keywords": ["write", "markdown", "capture", "daily"],
-    "form": {
-      "fields": [
-        {
-          "key": "title",
-          "label": "Note title",
-          "type": {
-            "control": "text",
-            "placeholder": "Untitled note"
-          },
-          "default": ""
-        },
-        {
-          "key": "template",
-          "label": "Start from",
-          "type": {
-            "control": "select",
-            "options": [
-              { "value": "blank", "label": "Blank note" },
-              { "value": "meeting", "label": "Meeting notes" },
-              { "value": "project", "label": "Project brief" }
-            ]
-          },
-          "default": "blank",
-          "advanced": true
-        }
-      ]
-    },
+    "form": null,
     "destructive": false,
     "longRunning": false
   },
@@ -45,26 +19,7 @@
     "tier": "core",
     "icon": "timer",
     "keywords": ["track", "hours", "project", "billable"],
-    "form": {
-      "fields": [
-        {
-          "key": "description",
-          "label": "What are you working on?",
-          "type": {
-            "control": "text",
-            "placeholder": "Describe this focus block"
-          },
-          "default": ""
-        },
-        {
-          "key": "billable",
-          "label": "Billable",
-          "type": { "control": "toggle" },
-          "default": true,
-          "advanced": true
-        }
-      ]
-    },
+    "form": null,
     "destructive": false,
     "longRunning": false
   },

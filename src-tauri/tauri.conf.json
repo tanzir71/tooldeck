@@ -38,6 +38,23 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "backgroundColor": "#f2f2ef"
+      },
+      {
+        "label": "floating-note",
+        "title": "Quick capture",
+        "width": 390,
+        "height": 320,
+        "minWidth": 300,
+        "minHeight": 220,
+        "visible": false,
+        "resizable": true,
+        "maximizable": false,
+        "minimizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "center": true,
+        "backgroundColor": "#f2f2ef"
       }
     ],
     "security": {

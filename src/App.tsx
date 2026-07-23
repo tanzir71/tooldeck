@@ -5,7 +5,9 @@ import { useEffect } from "react";
 import { CategoryScreen } from "./components/CategoryScreen";
 import { CommandPalette } from "./components/CommandPalette";
 import { HomeScreen } from "./components/HomeScreen";
+import { NotesWorkspace } from "./components/NotesWorkspace";
 import { Rail } from "./components/Rail";
+import { TimeWorkspace } from "./components/TimeWorkspace";
 import { ToolWorkspace } from "./components/ToolWorkspace";
 import { TopBar } from "./components/TopBar";
 import { fetchCatalog } from "./lib/registry";
@@ -98,7 +100,13 @@ export function App() {
           onCycleTheme={cycleTheme}
         />
         {selectedTool ? (
-          <ToolWorkspace key={selectedTool.id} tool={selectedTool} />
+          selectedTool.id === "note-new" ? (
+            <NotesWorkspace />
+          ) : selectedTool.id === "timer-start" ? (
+            <TimeWorkspace />
+          ) : (
+            <ToolWorkspace key={selectedTool.id} tool={selectedTool} />
+          )
         ) : category === "home" ? (
           <HomeScreen />
         ) : (

@@ -5,6 +5,8 @@ use rusqlite::{Connection, OptionalExtension};
 use serde::Serialize;
 
 const MIGRATION_001: &str = include_str!("../migrations/001_initial.sql");
+const MIGRATION_002: &str = include_str!("../migrations/002_notes_time.sql");
+const MIGRATIONS: &[(i64, &str)] = &[(1, MIGRATION_001), (2, MIGRATION_002)];
 
 pub struct Database {
     path: PathBuf,
@@ -60,21 +62,37 @@ impl Database {
             );
             ",
         )?;
-        let applied = connection
-            .query_row(
-                "SELECT version FROM schema_migrations WHERE version = 1",
-                [],
-                |row| row.get::<_, i64>(0),
-            )
-            .optional()?
-            .is_some();
-        if !applied {
-            let transaction = connection.unchecked_transaction()?;
-            transaction.execute_batch(MIGRATION_001)?;
-            transaction.execute("INSERT INTO schema_migrations(version) VALUES (1)", [])?;
-            transaction.commit()?;
+        for (version, sql) in MIGRATIONS {
+            let applied = connection
+                .query_row(
+                    "SELECT version FROM schema_migrations WHERE version = ?1",
+                    [version],
+                    |row| row.get::<_, i64>(0),
+                )
+                .optional()?
+                .is_some();
+            if !applied {
+                let transaction = connection.unchecked_transaction()?;
+                transaction.execute_batch(sql)?;
+                transaction.execute(
+                    "INSERT INTO schema_migrations(version) VALUES (?1)",
+                    [version],
+                )?;
+                transaction.commit()?;
+            }
         }
         Ok(())
+    }
+
+    pub fn with_connection<T>(
+        &self,
+        action: impl FnOnce(&Connection) -> Result<T, String>,
+    ) -> Result<T, String> {
+        let connection = self
+            .connection
+            .lock()
+            .map_err(|_| "database lock was poisoned".to_string())?;
+        action(&connection)
     }
 
     pub fn status(&self) -> Result<DbStatus, String> {
@@ -103,7 +121,7 @@ mod tests {
     #[test]
     fn first_migration_is_idempotent() {
         let database = Database::open_memory().expect("in-memory database opens");
-        assert_eq!(database.status().expect("status").schema_version, 1);
+        assert_eq!(database.status().expect("status").schema_version, 2);
         let connection = database.connection.lock().expect("database lock");
         Database::migrate(&connection).expect("migration reapplies");
         let count: i64 = connection
@@ -111,7 +129,7 @@ mod tests {
                 row.get(0)
             })
             .expect("migration count");
-        assert_eq!(count, 1);
+        assert_eq!(count, 2);
     }
 
     #[test]

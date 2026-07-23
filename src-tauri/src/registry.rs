@@ -159,19 +159,6 @@ impl Registry {
     }
 }
 
-fn text_field(key: &str, label: &str, placeholder: &str) -> Field {
-    Field {
-        key: key.into(),
-        label: label.into(),
-        kind: FieldKind::Text {
-            placeholder: Some(placeholder.into()),
-        },
-        advanced: false,
-        default: Some(serde_json::json!("")),
-        help: None,
-    }
-}
-
 pub fn build_registry() -> Registry {
     let mut registry = Registry::new();
     registry.register(Arc::new(NewNote));
@@ -198,34 +185,7 @@ impl Tool for NewNote {
                 "capture".into(),
                 "daily".into(),
             ],
-            form: Some(FormSchema {
-                fields: vec![
-                    text_field("title", "Note title", "Untitled note"),
-                    Field {
-                        key: "template".into(),
-                        label: "Start from".into(),
-                        kind: FieldKind::Select {
-                            options: vec![
-                                SelectOption {
-                                    value: "blank".into(),
-                                    label: "Blank note".into(),
-                                },
-                                SelectOption {
-                                    value: "meeting".into(),
-                                    label: "Meeting notes".into(),
-                                },
-                                SelectOption {
-                                    value: "project".into(),
-                                    label: "Project brief".into(),
-                                },
-                            ],
-                        },
-                        advanced: true,
-                        default: Some(serde_json::json!("blank")),
-                        help: None,
-                    },
-                ],
-            }),
+            form: None,
             destructive: false,
             long_running: false,
         }
@@ -261,23 +221,7 @@ impl Tool for StartTimer {
                 "project".into(),
                 "billable".into(),
             ],
-            form: Some(FormSchema {
-                fields: vec![
-                    text_field(
-                        "description",
-                        "What are you working on?",
-                        "Describe this focus block",
-                    ),
-                    Field {
-                        key: "billable".into(),
-                        label: "Billable".into(),
-                        kind: FieldKind::Toggle,
-                        advanced: true,
-                        default: Some(serde_json::json!(true)),
-                        help: None,
-                    },
-                ],
-            }),
+            form: None,
             destructive: false,
             long_running: false,
         }

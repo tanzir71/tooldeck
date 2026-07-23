@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+
+import { formatDuration, getTimerStatus } from "../lib/time";
+import type { TimeEntry } from "../lib/time";
 import type { ThemePreference } from "../stores/app";
 import { Icon } from "./Icon";
 import { Shortcut } from "./Shortcut";
@@ -15,6 +19,27 @@ const themeIcon: Record<ThemePreference, string> = {
 };
 
 export function TopBar({ theme, onOpenPalette, onCycleTheme }: TopBarProps) {
+  const [running, setRunning] = useState<TimeEntry | null>(null);
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () => {
+      void getTimerStatus().then((entry) => {
+        if (!cancelled) setRunning(entry);
+      });
+    };
+    refresh();
+    const interval = window.setInterval(() => {
+      setNow(Math.floor(Date.now() / 1000));
+      refresh();
+    }, 2_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
   return (
     <header className="topbar" data-tauri-drag-region>
       <div className="traffic-space" data-tauri-drag-region />
@@ -30,13 +55,29 @@ export function TopBar({ theme, onOpenPalette, onCycleTheme }: TopBarProps) {
       </button>
       <div className="topbar-actions">
         <button
-          className="timer-pill"
+          className={`timer-pill ${running ? "running" : ""}`}
           type="button"
-          aria-label="No timer running. Start a timer."
+          aria-label={
+            running
+              ? `${running.description}, ${formatDuration(
+                  now - running.startedAt,
+                )}`
+              : "No timer running. Start a timer."
+          }
         >
           <span className="timer-status" />
-          <span>No timer</span>
-          <Icon name="play" size={11} fill="currentColor" />
+          <span>
+            {running
+              ? `${running.description} · ${formatDuration(
+                  now - running.startedAt,
+                )}`
+              : "No timer"}
+          </span>
+          <Icon
+            name={running ? "pause" : "play"}
+            size={11}
+            fill="currentColor"
+          />
         </button>
         <button
           className="icon-button"

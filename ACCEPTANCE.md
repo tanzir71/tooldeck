@@ -31,9 +31,18 @@ Evidence:
 
 ## Later milestones
 
-- [ ] M1 — Notes core
-- [ ] M2 — Time tracking core
-- [ ] M3 — Links and floating note
+- [x] M1 — Notes core
+  - [x] Plain Markdown vault with atomic autosave and external-edit reindex
+  - [x] Split editor/preview, FTS5 search, tags, daily log, and templates
+  - [x] Empty/loading/error/saved states and keyboard-accessible controls
+- [x] M2 — Time tracking core
+  - [x] One durable running timer, UTC epochs, rate snapshots, and reports
+  - [x] Projects, manual entries, edit/split/merge service operations
+  - [x] Native idle query with keep/discard/reassign reconciliation
+  - [x] Crash recovery verified by closing and reopening the SQLite database
+- [x] M3 — Links and floating note
+  - [x] Wiki-link index, backlinks, and note-to-project links
+  - [x] Frameless always-on-top quick note with pin, opacity, and ⌥N
 - [ ] M4 — PDF tools, jobs, and safety
 - [ ] M5 — OCR and export engine
 - [ ] M6 — Media micro-tools
@@ -46,3 +55,6 @@ Evidence:
 | Milestone | Functionality | Edge cases | States | Keyboard + a11y | Visual polish | No data loss | Tests | Performance | Pass |
 | --------- | ------------: | ---------: | -----: | --------------: | ------------: | -----------: | ----: | ----------: | ---- |
 | M0        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           5 | Pass |
+| M1        |             4 |          4 |      4 |               4 |             4 |            4 |     5 |           4 | Pass |
+| M2        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
+| M3        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           4 | Pass |

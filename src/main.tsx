@@ -4,6 +4,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
+import { FloatingNote } from "./components/FloatingNote";
 import { MenuBarPanel } from "./components/MenuBarPanel";
 import "./styles.css";
 
@@ -13,6 +14,12 @@ const surface = isTauri()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {surface === "menu-bar" ? <MenuBarPanel /> : <App />}
+    {surface === "menu-bar" ? (
+      <MenuBarPanel />
+    ) : surface === "floating-note" ? (
+      <FloatingNote />
+    ) : (
+      <App />
+    )}
   </StrictMode>,
 );
