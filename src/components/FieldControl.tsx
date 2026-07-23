@@ -152,6 +152,17 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
     );
   }
 
+  if (kind.control === "textarea") {
+    return (
+      <textarea
+        value={String(value ?? "")}
+        placeholder={kind.placeholder}
+        rows={6}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    );
+  }
+
   return (
     <input
       type="text"

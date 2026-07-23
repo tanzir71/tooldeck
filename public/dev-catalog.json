@@ -231,6 +231,70 @@
     "longRunning": true
   },
   {
+    "id": "ocr-image",
+    "name": "OCR image to Markdown",
+    "summary": "Recognize text offline with Apple Vision and save a local Markdown capture.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "captions",
+    "keywords": ["scan", "recognize", "vision", "markdown"],
+    "form": { "fields": [
+      {
+        "key": "input",
+        "label": "Image or scan",
+        "type": { "control": "file-picker", "multiple": false, "extensions": ["png", "jpg", "jpeg", "heic", "tiff"] },
+        "help": "Runs entirely with the macOS Vision framework"
+      }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "ocr-pdf",
+    "name": "Make scanned PDF searchable",
+    "summary": "Recognize every scanned page and add an invisible searchable text layer.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "files",
+    "keywords": ["scan", "ocr", "searchable", "vision"],
+    "form": { "fields": [
+      { "key": "input", "label": "Scanned PDF", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "export-document",
+    "name": "Export document",
+    "summary": "Turn local notes and time data into a polished PDF template.",
+    "category": "create",
+    "tier": "core",
+    "icon": "file-output",
+    "keywords": ["invoice", "timesheet", "report", "standup", "research"],
+    "form": { "fields": [
+      {
+        "key": "template",
+        "label": "Template",
+        "type": { "control": "select", "options": [
+          { "value": "invoice", "label": "Invoice" },
+          { "value": "timesheet", "label": "Timesheet / activity report" },
+          { "value": "project-document", "label": "Project document / spec" },
+          { "value": "standup-log", "label": "Meeting / standup log" },
+          { "value": "research-writeup", "label": "Research writeup" }
+        ] },
+        "default": "project-document"
+      },
+      { "key": "title", "label": "Document title", "type": { "control": "text", "placeholder": "Project delivery" } },
+      { "key": "client", "label": "Client / project", "type": { "control": "text", "placeholder": "Acme Studio" } },
+      { "key": "body", "label": "Document content", "type": { "control": "textarea", "placeholder": "Summary, line-item description, or note content…" } },
+      { "key": "hours", "label": "Tracked hours", "type": { "control": "number", "min": 0, "step": 0.25 }, "default": 0, "advanced": true },
+      { "key": "rate", "label": "Hourly rate", "type": { "control": "number", "min": 0, "step": 1 }, "default": 0, "advanced": true },
+      { "key": "tax", "label": "Tax", "type": { "control": "number", "min": 0, "max": 100, "step": 1 }, "default": 0, "help": "Percent", "advanced": true }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
     "id": "image-resize",
     "name": "Resize image",
     "summary": "Resize by longest edge without touching the original.",

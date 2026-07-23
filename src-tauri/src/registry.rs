@@ -75,6 +75,9 @@ pub enum FieldKind {
     Text {
         placeholder: Option<String>,
     },
+    Textarea {
+        placeholder: Option<String>,
+    },
     Number {
         min: Option<f64>,
         max: Option<f64>,
@@ -170,6 +173,9 @@ pub fn build_registry() -> Registry {
     for meta in pdf_job_catalog() {
         registry.register(Arc::new(CatalogJobTool { meta }));
     }
+    for meta in m5_job_catalog() {
+        registry.register(Arc::new(CatalogJobTool { meta }));
+    }
     registry
 }
 
@@ -183,17 +189,35 @@ impl Tool for CatalogJobTool {
     }
 
     fn run(&self, _context: &ToolCtx, input: ToolInput) -> Result<ToolOutcome, ToolError> {
+        let requires_input = self
+            .meta
+            .form
+            .as_ref()
+            .is_some_and(|form| form.fields.iter().any(|field| field.key == "input"));
         let has_input = input.get("input").is_some_and(|value| match value {
             serde_json::Value::String(path) => !path.trim().is_empty(),
             serde_json::Value::Array(paths) => !paths.is_empty(),
             _ => false,
         });
-        if !has_input {
+        if requires_input && !has_input {
             return Err(ToolError::Invalid("choose input files".into()));
         }
         Ok(ToolOutcome::Job {
             job_id: self.meta.id.clone(),
         })
+    }
+}
+
+fn textarea_field(key: &str, label: &str, placeholder: &str) -> Field {
+    Field {
+        key: key.into(),
+        label: label.into(),
+        kind: FieldKind::Textarea {
+            placeholder: Some(placeholder.into()),
+        },
+        advanced: false,
+        default: None,
+        help: None,
     }
 }
 
@@ -430,6 +454,138 @@ fn pdf_job_catalog() -> Vec<ToolMeta> {
                 number_field("height", "Height", 8.0, "Percent of page"),
             ],
         ),
+    ]
+}
+
+fn m5_job_catalog() -> Vec<ToolMeta> {
+    vec![
+        pdf_job(
+            "ocr-image",
+            "OCR image to Markdown",
+            "Recognize text offline with Apple Vision and save a local Markdown capture.",
+            "captions",
+            &["scan", "recognize", "vision", "markdown"],
+            vec![Field {
+                key: "input".into(),
+                label: "Image or scan".into(),
+                kind: FieldKind::FilePicker {
+                    multiple: false,
+                    extensions: vec![
+                        "png".into(),
+                        "jpg".into(),
+                        "jpeg".into(),
+                        "heic".into(),
+                        "tiff".into(),
+                    ],
+                },
+                advanced: false,
+                default: None,
+                help: Some("Runs entirely with the macOS Vision framework".into()),
+            }],
+        ),
+        pdf_job(
+            "ocr-pdf",
+            "Make scanned PDF searchable",
+            "Recognize every scanned page and add an invisible searchable text layer.",
+            "files",
+            &["scan", "ocr", "searchable", "vision"],
+            vec![pdf_input("Scanned PDF", false)],
+        ),
+        ToolMeta {
+            id: "export-document".into(),
+            name: "Export document".into(),
+            summary: "Turn local notes and time data into a polished PDF template.".into(),
+            category: Category::Create,
+            tier: Tier::Core,
+            icon: "file-output".into(),
+            keywords: vec![
+                "invoice".into(),
+                "timesheet".into(),
+                "report".into(),
+                "standup".into(),
+                "research".into(),
+            ],
+            form: Some(FormSchema {
+                fields: vec![
+                    Field {
+                        key: "template".into(),
+                        label: "Template".into(),
+                        kind: FieldKind::Select {
+                            options: vec![
+                                SelectOption {
+                                    value: "invoice".into(),
+                                    label: "Invoice".into(),
+                                },
+                                SelectOption {
+                                    value: "timesheet".into(),
+                                    label: "Timesheet / activity report".into(),
+                                },
+                                SelectOption {
+                                    value: "project-document".into(),
+                                    label: "Project document / spec".into(),
+                                },
+                                SelectOption {
+                                    value: "standup-log".into(),
+                                    label: "Meeting / standup log".into(),
+                                },
+                                SelectOption {
+                                    value: "research-writeup".into(),
+                                    label: "Research writeup".into(),
+                                },
+                            ],
+                        },
+                        advanced: false,
+                        default: Some(serde_json::json!("project-document")),
+                        help: None,
+                    },
+                    text_field("title", "Document title", "Project delivery", None),
+                    text_field("client", "Client / project", "Acme Studio", None),
+                    textarea_field(
+                        "body",
+                        "Document content",
+                        "Summary, line-item description, or note content…",
+                    ),
+                    Field {
+                        key: "hours".into(),
+                        label: "Tracked hours".into(),
+                        kind: FieldKind::Number {
+                            min: Some(0.0),
+                            max: None,
+                            step: Some(0.25),
+                        },
+                        advanced: true,
+                        default: Some(serde_json::json!(0)),
+                        help: None,
+                    },
+                    Field {
+                        key: "rate".into(),
+                        label: "Hourly rate".into(),
+                        kind: FieldKind::Number {
+                            min: Some(0.0),
+                            max: None,
+                            step: Some(1.0),
+                        },
+                        advanced: true,
+                        default: Some(serde_json::json!(0)),
+                        help: None,
+                    },
+                    Field {
+                        key: "tax".into(),
+                        label: "Tax".into(),
+                        kind: FieldKind::Number {
+                            min: Some(0.0),
+                            max: Some(100.0),
+                            step: Some(1.0),
+                        },
+                        advanced: true,
+                        default: Some(serde_json::json!(0)),
+                        help: Some("Percent".into()),
+                    },
+                ],
+            }),
+            destructive: false,
+            long_running: true,
+        },
     ]
 }
 

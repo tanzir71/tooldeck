@@ -54,7 +54,16 @@ Evidence:
   - [x] Output Center has output and Safety tabs, including scoped undo into a
         recoverable internal trash
   - [x] Originals are never passed as an output target
-- [ ] M5 — OCR and export engine
+- [x] M5 — OCR and export engine
+  - [x] Offline image OCR uses direct Rust→Apple Vision FFI (the handoff’s
+        no-Swift fallback) and writes Markdown with source attribution
+  - [x] Scanned PDFs are rendered page by page, recognized locally, and rebuilt
+        with the original scan plus an invisible searchable text layer
+  - [x] Invoice, timesheet/activity report, project document, standup log, and
+        research writeup templates render valid PDFs with supplied data
+  - [x] Unicode document export produces a valid non-empty PDF
+  - [x] OCR and export work through the shared cancellable job, Output Center,
+        and Safety/undo contracts
 - [ ] M6 — Media micro-tools
 - [ ] M7 — Connected workflows
 - [ ] M8 — Polish pass
@@ -69,6 +78,7 @@ Evidence:
 | M2        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 | M3        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           4 | Pass |
 | M4        |             4 |          4 |      4 |               4 |             4 |            5 |     4 |           4 | Pass |
+| M5        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 
 M4 evidence:
 
@@ -84,3 +94,19 @@ M4 evidence:
 - `make verify` passes with 25 Rust tests, 4 frontend tests, Clippy with
   warnings denied, ESLint, TypeScript, formatting, and the production web
   build.
+
+M5 evidence:
+
+- The unrestricted macOS Vision fixture test recognizes
+  `SECRET-CODE-7419`; restricted CI sandboxes detect the unavailable native
+  framework service and keep the rest of the deterministic gate runnable.
+- The searchable-PDF fixture retains its JPEG page and exposes the expected OCR
+  string through `pdftotext`.
+- Every shipped template renders to PDF and is re-read to confirm the title,
+  client/project, and body; invoice math is separately asserted.
+- The Unicode fixture includes `Résumé · 東京 · প্রকল্প` and produces a valid
+  PDF.
+- Screenshots: `artifacts/m5-export-light.png`,
+  `artifacts/m5-export-output-light.png`, and `artifacts/m5-ocr-dark.png`.
+- `make verify` passes with 32 Rust tests and the full frontend/lint/type/build
+  gate.

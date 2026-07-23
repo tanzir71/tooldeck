@@ -46,6 +46,7 @@ export type FieldKind =
   | { control: "file-picker"; multiple: boolean; extensions: string[] }
   | { control: "folder-picker" }
   | { control: "text"; placeholder?: string }
+  | { control: "textarea"; placeholder?: string }
   | { control: "number"; min?: number; max?: number; step?: number }
   | { control: "toggle" }
   | { control: "select"; options: SelectOption[] }
@@ -99,6 +100,9 @@ export async function runTool(
     "pdf-watermark": "pdf-watermark",
     "pdf-page-numbers": "pdf-page-numbers",
     "pdf-redact": "pdf-redact",
+    "ocr-image": "ocr-image",
+    "ocr-pdf": "ocr-pdf",
+    "export-document": "export-document",
     "image-resize": "image-resize",
     "video-trim": "video-trim",
   };

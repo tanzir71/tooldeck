@@ -107,8 +107,17 @@ impl JobRunner {
         input: &Value,
         output: &Path,
     ) -> Result<(), String> {
+        if is_cancelled(app, id)? {
+            return Ok(());
+        }
         update_job(app, id, "running", 0.08, None)?;
         match kind {
+            "ocr-image" => self.ocr_image(app, id, input, output)?,
+            "ocr-pdf" => self.ocr_pdf(app, id, input, output)?,
+            "export-document" => {
+                update_job(app, id, "running", 0.45, None)?;
+                crate::export::render_document(input, output)?;
+            }
             "pdf-split" => self.split_pdf(app, id, input, output)?,
             "pdf-reorder" => self.reorder_pdf(app, id, input, output, false)?,
             "pdf-delete-pages" => self.reorder_pdf(app, id, input, output, true)?,
@@ -197,6 +206,67 @@ impl JobRunner {
             ));
         }
         Ok(())
+    }
+
+    fn ocr_image(
+        &self,
+        app: &AppHandle,
+        id: &str,
+        input: &Value,
+        output: &Path,
+    ) -> Result<(), String> {
+        update_job(app, id, "running", 0.32, None)?;
+        let source = string_value(input, "input")?;
+        let text = crate::ocr::recognize_image(Path::new(source))?;
+        update_job(app, id, "running", 0.82, None)?;
+        fs::write(
+            output,
+            format!(
+                "# OCR capture\n\nSource: `{}`\n\n{}",
+                Path::new(source)
+                    .file_name()
+                    .and_then(|value| value.to_str())
+                    .unwrap_or("local image"),
+                text
+            ),
+        )
+        .map_err(|error| error.to_string())
+    }
+
+    fn ocr_pdf(
+        &self,
+        app: &AppHandle,
+        id: &str,
+        input: &Value,
+        output: &Path,
+    ) -> Result<(), String> {
+        let work = self.exports.join(format!(".work-{id}"));
+        fs::create_dir_all(&work).map_err(|error| error.to_string())?;
+        let mut render = Command::new("pdftoppm");
+        render
+            .args(["-jpeg", "-jpegopt", "quality=88", "-r", "144"])
+            .arg(string_value(input, "input")?)
+            .arg(work.join("scan"))
+            .stdin(std::process::Stdio::null());
+        let result = (|| {
+            self.run_command(app, id, render, 0.12, 0.38)?;
+            let images = files_with_extension(&work, "jpg")?;
+            if images.is_empty() {
+                return Err("No scanned pages could be rendered.".into());
+            }
+            let total = images.len();
+            let mut pages = Vec::new();
+            for (index, image) in images.into_iter().enumerate() {
+                let text = crate::ocr::recognize_image(&image)
+                    .map_err(|error| format!("OCR failed on page {}: {error}", index + 1))?;
+                let progress = 0.42 + ((index + 1) as f64 / total as f64) * 0.4;
+                update_job(app, id, "running", progress.min(0.86), None)?;
+                pages.push((image, text));
+            }
+            crate::ocr::write_searchable_pdf(&pages, output)
+        })();
+        let _ = fs::remove_dir_all(work);
+        result
     }
 
     fn split_pdf(
@@ -899,6 +969,8 @@ fn command_for(kind: &str, input: &Value, output: &Path) -> Result<Command, Stri
 
 fn output_path(exports: &Path, kind: &str, input: &Value) -> Result<PathBuf, String> {
     let extension = match kind {
+        "ocr-image" => "md",
+        "ocr-pdf" | "export-document" => "pdf",
         "pdf-merge" | "pdf-reorder" | "pdf-delete-pages" | "pdf-rotate" | "pdf-compress"
         | "images-to-pdf" | "pdf-redact" | "pdf-watermark" | "pdf-page-numbers" => "pdf",
         "pdf-extract-text" => "txt",

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0 — M5 offline OCR and document export
+
+- Added direct Rust FFI to the macOS Vision framework for fast offline image
+  OCR without Swift, an account, or a bundled network service.
+- Added image-to-Markdown OCR with source attribution.
+- Added scanned-PDF OCR that preserves the rendered page and adds an invisible
+  searchable text layer.
+- Added a template-driven export engine with Invoice, Timesheet / Activity
+  Report, Project Document, Standup Log, and Research Writeup outputs.
+- Added a shared declarative export workspace with multiline content, optional
+  tracked hours, rate, and tax inputs.
+- Added native fixtures for OCR recognition, searchable PDF extraction, all
+  five template PDFs, invoice totals, and multilingual Unicode export.
+
 ## 0.3.0 — M4 local PDF and Output Center
 
 - Added a persistent, cancellable local job runner with progress and

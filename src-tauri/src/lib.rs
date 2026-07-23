@@ -1,6 +1,8 @@
 mod db;
+mod export;
 mod jobs;
 mod notes;
+mod ocr;
 mod platform;
 mod registry;
 mod safety;
