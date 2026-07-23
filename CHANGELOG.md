@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.0 — M9 release engineering
+
+- Added a release-only Tauri overlay for eight target-triple sidecars while
+  keeping development independent of a shell PATH.
+- Added reviewed sidecar intake with arm64 Mach-O, executable, self-contained
+  linkage, FFmpeg GPL-policy, and SHA-256 checks.
+- Added per-sidecar hardened-runtime signing, app signing, strict nested
+  signature verification, and installed-bundle execution smoke tests.
+- Added deterministic DMG creation/signing plus `notarytool --wait`, stapling,
+  validation, and Gatekeeper assessment.
+- Added a credential-free release audit that reports each missing human input
+  without leaking or inventing credentials.
+- Added the complete release and clean-machine runbook plus in-app/repository
+  FFmpeg, Poppler, and Apple Vision OCR notices.
+- Promoted the app, Rust crate, and package metadata to version 1.0.0.
+
 ## 0.7.0 — M8 onboarding, privacy, and polish
 
 - Added a skippable three-step first run for profile choice, writable Markdown

@@ -101,21 +101,50 @@ Evidence:
         after external deletion
   - [x] Escape navigation, associated form labels, combobox semantics, visible
         focus, 28px+ controls, dark parity, and reduced motion are verified
-- [ ] M9 — Signed and notarized package
+- [x] M9 — Release packaging implementation
+  - [x] Release-only Tauri overlay declares all eight clean-machine sidecars
+        using target-triple filenames
+  - [x] Sidecar intake validates arm64 Mach-O format, executable probes,
+        system-only dynamic dependencies, and SHA-256 output
+  - [x] GPL-enabled FFmpeg is rejected by default and cannot bypass the
+        self-contained binary check
+  - [x] Hardened runtime and minimal direct-distribution entitlements are wired
+  - [x] Every bundled sidecar is individually signed and verified before the
+        outer app is signed
+  - [x] DMG creation, signing, `notarytool --wait`, stapling, `spctl`, and
+        installed-bundle execution checks are scripted
+  - [x] Credential-free audit exits nonzero and enumerates each human-owned
+        release prerequisite
+  - [x] FFmpeg, Poppler, and Apple Vision OCR decisions are documented in-app
+        and in the repository
+
+Human release gate (flagged by the handoff, not fabricatable by the agent):
+
+- [ ] Supply license-reviewed, self-contained FFmpeg/FFprobe and Poppler
+      sidecars
+- [ ] Supply an installed Apple Developer ID identity and notarization
+      credentials
+- [ ] Run the signed pipeline and record Apple’s accepted submission
+- [ ] Complete the Homebrew-free clean-machine acceptance in `RELEASE.md`
 
 ## Self-critique rubric
 
-| Milestone | Functionality | Edge cases | States | Keyboard + a11y | Visual polish | No data loss | Tests | Performance | Pass |
-| --------- | ------------: | ---------: | -----: | --------------: | ------------: | -----------: | ----: | ----------: | ---- |
-| M0        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           5 | Pass |
-| M1        |             4 |          4 |      4 |               4 |             4 |            4 |     5 |           4 | Pass |
-| M2        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
-| M3        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           4 | Pass |
-| M4        |             4 |          4 |      4 |               4 |             4 |            5 |     4 |           4 | Pass |
-| M5        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
-| M6        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
-| M7        |             4 |          5 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
-| M8        |             5 |          4 |      5 |               5 |             4 |            5 |     5 |           4 | Pass |
+| Milestone | Functionality | Edge cases | States | Keyboard + a11y | Visual polish | No data loss | Tests | Performance | Pass   |
+| --------- | ------------: | ---------: | -----: | --------------: | ------------: | -----------: | ----: | ----------: | ------ |
+| M0        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           5 | Pass   |
+| M1        |             4 |          4 |      4 |               4 |             4 |            4 |     5 |           4 | Pass   |
+| M2        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass   |
+| M3        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           4 | Pass   |
+| M4        |             4 |          4 |      4 |               4 |             4 |            5 |     4 |           4 | Pass   |
+| M5        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass   |
+| M6        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass   |
+| M7        |             4 |          5 |      4 |               4 |             4 |            5 |     5 |           4 | Pass   |
+| M8        |             5 |          4 |      5 |               5 |             4 |            5 |     5 |           4 | Pass   |
+| M9        |             4 |          5 |      5 |               4 |             4 |            5 |     5 |           5 | Pass\* |
+
+`Pass*` means all implementable release engineering is complete. Apple
+notarization and licensed binary selection require the human-owned credentials
+and legal decisions explicitly listed as open items in the handoff.
 
 M4 evidence:
 
@@ -199,3 +228,20 @@ M8 evidence:
   services active.
 - `make verify` passes with 41 Rust tests, 6 frontend tests, and the full
   formatting/lint/type/build gate.
+
+M9 evidence:
+
+- `scripts/test-release-config.sh` validates shell syntax, plist/config
+  structure, hardened runtime, version 1.0.0, eight external binaries, and
+  credential-blocker reporting in every `make verify`.
+- `make release-audit` exits 2 and reports 11 precise local blockers: eight
+  unstaged reviewed sidecars, signing identity, notarization credentials, and
+  third-party approval.
+- The actual developer-machine FFmpeg fixture is rejected first because it
+  enables GPL components and, even with that policy override, is rejected again
+  for a Homebrew dynamic-library dependency.
+- `RELEASE.md` defines the reproducible supply → audit → sign → notarize →
+  staple → clean-machine flow; `THIRD_PARTY_NOTICES.md` and Settings expose the
+  FFmpeg, Poppler, and Vision decisions.
+- The final signed/notarized DMG result is intentionally not claimed without
+  the human inputs above.

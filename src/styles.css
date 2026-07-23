@@ -1586,6 +1586,35 @@ button:disabled {
   justify-self: end;
 }
 
+.settings-license-list {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+.settings-license-list > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 11px;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-license-list > div:last-child {
+  border-bottom: 0;
+}
+
+.settings-license-list strong {
+  font-size: 10.5px;
+}
+
+.settings-license-list span {
+  color: var(--ink-muted);
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
 :root[data-density="compact"] .tool-card {
   min-height: 58px;
   padding: 8px 10px;

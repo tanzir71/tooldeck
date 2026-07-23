@@ -266,6 +266,39 @@ export function SettingsWorkspace() {
           Replay setup
         </button>
       </section>
+
+      <section className="settings-section">
+        <div className="settings-section-copy">
+          <Icon name="files" size={17} />
+          <div>
+            <h2>Components & licenses</h2>
+            <p>Release inputs are reviewed and supplied separately.</p>
+          </div>
+        </div>
+        <div className="settings-license-list">
+          <div>
+            <strong>FFmpeg / FFprobe</strong>
+            <span>
+              Release gate requires a reviewed, self-contained, LGPL-compatible
+              build by default.
+            </span>
+          </div>
+          <div>
+            <strong>PDF command tools</strong>
+            <span>
+              Poppler distribution terms and corresponding source require human
+              approval before shipping.
+            </span>
+          </div>
+          <div>
+            <strong>Offline OCR</strong>
+            <span>
+              Uses Apple Vision on-device; no Tesseract language pack is
+              bundled.
+            </span>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

@@ -103,22 +103,25 @@ impl NotesService {
                     .to_string_lossy()
                     .to_string();
                 seen.insert(relative.clone());
-                let updated_at = file_timestamp(&absolute)?;
-                let indexed_at = connection
+                let metadata = file_metadata(&absolute)?;
+                let indexed = connection
                     .query_row(
-                        "SELECT updated_at FROM notes WHERE path = ?1",
+                        "SELECT n.updated_at, length(CAST(f.body AS BLOB))
+                         FROM notes n
+                         JOIN notes_fts f ON f.path = n.path
+                         WHERE n.path = ?1",
                         [&relative],
-                        |row| row.get::<_, i64>(0),
+                        |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),
                     )
                     .optional()
                     .map_err(|error| error.to_string())?;
-                if indexed_at == Some(updated_at) {
+                if indexed == Some((metadata.updated_at, metadata.size)) {
                     continue;
                 }
                 let Ok(content) = fs::read_to_string(&absolute) else {
                     continue;
                 };
-                index_note(connection, &relative, &content, updated_at)?;
+                index_note(connection, &relative, &content, metadata.updated_at)?;
             }
             let indexed = {
                 let mut statement = connection
@@ -664,13 +667,24 @@ fn template_body(title: &str, template: &str) -> String {
 }
 
 fn file_timestamp(path: &Path) -> Result<i64, String> {
-    let modified = fs::metadata(path)
-        .and_then(|metadata| metadata.modified())
-        .map_err(|error| error.to_string())?;
-    Ok(modified
-        .duration_since(UNIX_EPOCH)
-        .map_err(|error| error.to_string())?
-        .as_millis() as i64)
+    Ok(file_metadata(path)?.updated_at)
+}
+
+struct FileMetadata {
+    updated_at: i64,
+    size: i64,
+}
+
+fn file_metadata(path: &Path) -> Result<FileMetadata, String> {
+    let metadata = fs::metadata(path).map_err(|error| error.to_string())?;
+    let modified = metadata.modified().map_err(|error| error.to_string())?;
+    Ok(FileMetadata {
+        updated_at: modified
+            .duration_since(UNIX_EPOCH)
+            .map_err(|error| error.to_string())?
+            .as_millis() as i64,
+        size: metadata.len() as i64,
+    })
 }
 
 fn now_millis() -> i64 {
