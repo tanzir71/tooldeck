@@ -64,7 +64,16 @@ Evidence:
   - [x] Unicode document export produces a valid non-empty PDF
   - [x] OCR and export work through the shared cancellable job, Output Center,
         and Safety/undo contracts
-- [ ] M6 — Media micro-tools
+- [x] M6 — Media micro-tools
+  - [x] Video trim, crop, MP4/MOV/WebM conversion, GIF export, and PNG frame
+        extraction run through FFmpeg/FFprobe jobs
+  - [x] GIF output is capped at 15 seconds, 15 fps, and a 960px longest edge
+  - [x] Image crop, max-edge resize, PNG/JPEG/HEIC conversion, and JPEG
+        compression preserve the selected original
+  - [x] Interactive region capture and bitmap markup cover arrow, box, text,
+        pixelation, and redaction
+  - [x] Generated captures can be appended to a selected Markdown note and
+        reindexed
 - [ ] M7 — Connected workflows
 - [ ] M8 — Polish pass
 - [ ] M9 — Signed and notarized package
@@ -79,6 +88,7 @@ Evidence:
 | M3        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           4 | Pass |
 | M4        |             4 |          4 |      4 |               4 |             4 |            5 |     4 |           4 | Pass |
 | M5        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
+| M6        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 
 M4 evidence:
 
@@ -109,4 +119,20 @@ M5 evidence:
 - Screenshots: `artifacts/m5-export-light.png`,
   `artifacts/m5-export-output-light.png`, and `artifacts/m5-ocr-dark.png`.
 - `make verify` passes with 32 Rust tests and the full frontend/lint/type/build
+  gate.
+
+M6 evidence:
+
+- The real FFmpeg fixture verifies a one-second trim within 0.08 seconds,
+  WebM conversion, a 160px/8fps/two-second capped GIF, a 160×120 crop, and a
+  PNG frame grab.
+- Real ImageIO fixtures verify crop dimensions, JPEG conversion/compression,
+  BMP-backed screenshot redaction, PNG re-rendering, and unchanged source
+  bytes.
+- The notes fixture copies a generated capture below `attachments/`, appends
+  the Markdown image link, and rebuilds the derived index.
+- Screenshots: `artifacts/m6-video-gif-light.png`,
+  `artifacts/m6-media-output-light.png`, and
+  `artifacts/m6-markup-dark.png`.
+- `make verify` passes with 36 Rust tests and the full frontend/lint/type/build
   gate.

@@ -176,6 +176,9 @@ pub fn build_registry() -> Registry {
     for meta in m5_job_catalog() {
         registry.register(Arc::new(CatalogJobTool { meta }));
     }
+    for meta in m6_job_catalog() {
+        registry.register(Arc::new(CatalogJobTool { meta }));
+    }
     registry
 }
 
@@ -260,6 +263,31 @@ fn number_field(key: &str, label: &str, default: f64, help: &str) -> Field {
         advanced: false,
         default: Some(serde_json::json!(default)),
         help: Some(help.into()),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn numeric_field(
+    key: &str,
+    label: &str,
+    default: f64,
+    min: f64,
+    max: Option<f64>,
+    step: f64,
+    advanced: bool,
+    help: Option<&str>,
+) -> Field {
+    Field {
+        key: key.into(),
+        label: label.into(),
+        kind: FieldKind::Number {
+            min: Some(min),
+            max,
+            step: Some(step),
+        },
+        advanced,
+        default: Some(serde_json::json!(default)),
+        help: help.map(Into::into),
     }
 }
 
@@ -586,6 +614,388 @@ fn m5_job_catalog() -> Vec<ToolMeta> {
             destructive: false,
             long_running: true,
         },
+    ]
+}
+
+fn category_job(
+    id: &str,
+    name: &str,
+    summary: &str,
+    category: Category,
+    icon: &str,
+    keywords: &[&str],
+    fields: Vec<Field>,
+) -> ToolMeta {
+    ToolMeta {
+        id: id.into(),
+        name: name.into(),
+        summary: summary.into(),
+        category,
+        tier: Tier::Core,
+        icon: icon.into(),
+        keywords: keywords.iter().map(|value| (*value).into()).collect(),
+        form: Some(FormSchema { fields }),
+        destructive: false,
+        long_running: true,
+    }
+}
+
+fn image_input(label: &str) -> Field {
+    Field {
+        key: "input".into(),
+        label: label.into(),
+        kind: FieldKind::FilePicker {
+            multiple: false,
+            extensions: vec!["png".into(), "jpg".into(), "jpeg".into(), "heic".into()],
+        },
+        advanced: false,
+        default: None,
+        help: None,
+    }
+}
+
+fn video_input() -> Field {
+    Field {
+        key: "input".into(),
+        label: "Video".into(),
+        kind: FieldKind::FilePicker {
+            multiple: false,
+            extensions: vec!["mp4".into(), "mov".into(), "m4v".into(), "webm".into()],
+        },
+        advanced: false,
+        default: None,
+        help: None,
+    }
+}
+
+fn note_attachment_field() -> Field {
+    Field {
+        key: "note_path".into(),
+        label: "Attach to note".into(),
+        kind: FieldKind::Text {
+            placeholder: Some("Quick capture.md".into()),
+        },
+        advanced: true,
+        default: None,
+        help: Some("Optional path in the local notes vault".into()),
+    }
+}
+
+fn m6_job_catalog() -> Vec<ToolMeta> {
+    vec![
+        category_job(
+            "image-crop",
+            "Crop image",
+            "Create a precise rectangular crop while preserving the original.",
+            Category::Images,
+            "image",
+            &["trim", "region", "dimensions"],
+            vec![
+                image_input("Image"),
+                numeric_field(
+                    "width",
+                    "Width",
+                    800.0,
+                    1.0,
+                    None,
+                    1.0,
+                    false,
+                    Some("Pixels"),
+                ),
+                numeric_field(
+                    "height",
+                    "Height",
+                    600.0,
+                    1.0,
+                    None,
+                    1.0,
+                    false,
+                    Some("Pixels"),
+                ),
+                numeric_field("x", "Horizontal offset", 0.0, 0.0, None, 1.0, true, None),
+                numeric_field("y", "Vertical offset", 0.0, 0.0, None, 1.0, true, None),
+            ],
+        ),
+        category_job(
+            "image-convert",
+            "Convert image",
+            "Convert a local image to PNG, JPEG, or HEIC.",
+            Category::Images,
+            "arrow-left-right",
+            &["png", "jpeg", "heic", "format"],
+            vec![
+                image_input("Image"),
+                Field {
+                    key: "format".into(),
+                    label: "Output format".into(),
+                    kind: FieldKind::Select {
+                        options: vec![
+                            SelectOption {
+                                value: "png".into(),
+                                label: "PNG".into(),
+                            },
+                            SelectOption {
+                                value: "jpg".into(),
+                                label: "JPEG".into(),
+                            },
+                            SelectOption {
+                                value: "heic".into(),
+                                label: "HEIC".into(),
+                            },
+                        ],
+                    },
+                    advanced: false,
+                    default: Some(serde_json::json!("png")),
+                    help: None,
+                },
+            ],
+        ),
+        category_job(
+            "image-compress",
+            "Compress image",
+            "Create a smaller JPEG with a simple quality control.",
+            Category::Images,
+            "image",
+            &["optimize", "quality", "smaller"],
+            vec![
+                image_input("Image"),
+                Field {
+                    key: "quality".into(),
+                    label: "JPEG quality".into(),
+                    kind: FieldKind::Slider {
+                        min: 1.0,
+                        max: 100.0,
+                        step: 1.0,
+                    },
+                    advanced: false,
+                    default: Some(serde_json::json!(72)),
+                    help: Some("72 is a balanced default".into()),
+                },
+            ],
+        ),
+        category_job(
+            "video-crop",
+            "Crop video",
+            "Crop one region from a clip without opening a timeline.",
+            Category::Media,
+            "aperture",
+            &["region", "dimensions", "ffmpeg"],
+            vec![
+                video_input(),
+                numeric_field(
+                    "width",
+                    "Width",
+                    1280.0,
+                    2.0,
+                    None,
+                    2.0,
+                    false,
+                    Some("Pixels"),
+                ),
+                numeric_field(
+                    "height",
+                    "Height",
+                    720.0,
+                    2.0,
+                    None,
+                    2.0,
+                    false,
+                    Some("Pixels"),
+                ),
+                numeric_field("x", "Horizontal offset", 0.0, 0.0, None, 2.0, true, None),
+                numeric_field("y", "Vertical offset", 0.0, 0.0, None, 2.0, true, None),
+            ],
+        ),
+        category_job(
+            "video-to-gif",
+            "Video to GIF",
+            "Create a capped, document-friendly GIF from a short clip.",
+            Category::Media,
+            "play",
+            &["gif", "animation", "clip"],
+            vec![
+                video_input(),
+                numeric_field(
+                    "start",
+                    "Start",
+                    0.0,
+                    0.0,
+                    None,
+                    0.1,
+                    false,
+                    Some("Seconds"),
+                ),
+                numeric_field(
+                    "duration",
+                    "Duration",
+                    8.0,
+                    0.1,
+                    Some(15.0),
+                    0.1,
+                    false,
+                    Some("Maximum 15 seconds"),
+                ),
+                numeric_field(
+                    "max_dim",
+                    "Longest edge",
+                    720.0,
+                    64.0,
+                    Some(960.0),
+                    1.0,
+                    true,
+                    Some("Pixels · capped at 960"),
+                ),
+                numeric_field(
+                    "fps",
+                    "Frame rate",
+                    12.0,
+                    1.0,
+                    Some(15.0),
+                    1.0,
+                    true,
+                    Some("Capped at 15 fps"),
+                ),
+            ],
+        ),
+        category_job(
+            "video-convert",
+            "Convert video",
+            "Convert a clip to MP4, MOV, or WebM.",
+            Category::Media,
+            "arrow-left-right",
+            &["mp4", "mov", "webm", "ffmpeg"],
+            vec![
+                video_input(),
+                Field {
+                    key: "format".into(),
+                    label: "Output format".into(),
+                    kind: FieldKind::Select {
+                        options: vec![
+                            SelectOption {
+                                value: "mp4".into(),
+                                label: "MP4".into(),
+                            },
+                            SelectOption {
+                                value: "mov".into(),
+                                label: "MOV".into(),
+                            },
+                            SelectOption {
+                                value: "webm".into(),
+                                label: "WebM".into(),
+                            },
+                        ],
+                    },
+                    advanced: false,
+                    default: Some(serde_json::json!("mp4")),
+                    help: None,
+                },
+            ],
+        ),
+        category_job(
+            "video-frame",
+            "Extract video frame",
+            "Save one precise video frame as a PNG.",
+            Category::Media,
+            "camera",
+            &["still", "png", "thumbnail"],
+            vec![
+                video_input(),
+                numeric_field(
+                    "timestamp",
+                    "Timestamp",
+                    0.0,
+                    0.0,
+                    None,
+                    0.1,
+                    false,
+                    Some("Seconds"),
+                ),
+            ],
+        ),
+        category_job(
+            "screenshot-capture",
+            "Capture screen region",
+            "Choose a screen region and save it locally or attach it to a note.",
+            Category::Capture,
+            "camera",
+            &["screenshot", "region", "attach"],
+            vec![note_attachment_field()],
+        ),
+        category_job(
+            "screenshot-markup",
+            "Mark up screenshot",
+            "Add an arrow, box, label, pixelation, or true visual redaction.",
+            Category::Capture,
+            "wand",
+            &["annotate", "arrow", "blur", "redact"],
+            vec![
+                image_input("Screenshot"),
+                Field {
+                    key: "style".into(),
+                    label: "Markup".into(),
+                    kind: FieldKind::Select {
+                        options: vec![
+                            SelectOption {
+                                value: "arrow".into(),
+                                label: "Arrow".into(),
+                            },
+                            SelectOption {
+                                value: "box".into(),
+                                label: "Outline box".into(),
+                            },
+                            SelectOption {
+                                value: "text".into(),
+                                label: "Text label".into(),
+                            },
+                            SelectOption {
+                                value: "blur".into(),
+                                label: "Pixelate".into(),
+                            },
+                            SelectOption {
+                                value: "redact".into(),
+                                label: "Black redaction".into(),
+                            },
+                        ],
+                    },
+                    advanced: false,
+                    default: Some(serde_json::json!("arrow")),
+                    help: None,
+                },
+                numeric_field("x", "Left", 40.0, 0.0, None, 1.0, false, Some("Pixels")),
+                numeric_field("y", "Top", 40.0, 0.0, None, 1.0, false, Some("Pixels")),
+                numeric_field(
+                    "width",
+                    "Width",
+                    320.0,
+                    1.0,
+                    None,
+                    1.0,
+                    false,
+                    Some("Pixels"),
+                ),
+                numeric_field(
+                    "height",
+                    "Height",
+                    160.0,
+                    1.0,
+                    None,
+                    1.0,
+                    false,
+                    Some("Pixels"),
+                ),
+                Field {
+                    key: "text".into(),
+                    label: "Label".into(),
+                    kind: FieldKind::Text {
+                        placeholder: Some("NOTE".into()),
+                    },
+                    advanced: true,
+                    default: None,
+                    help: Some("Used by Text label markup".into()),
+                },
+                note_attachment_field(),
+            ],
+        ),
     ]
 }
 

@@ -382,5 +382,160 @@
     },
     "destructive": false,
     "longRunning": true
+  },
+  {
+    "id": "image-crop",
+    "name": "Crop image",
+    "summary": "Create a precise rectangular crop while preserving the original.",
+    "category": "images",
+    "tier": "core",
+    "icon": "image",
+    "keywords": ["trim", "region", "dimensions"],
+    "form": { "fields": [
+      { "key": "input", "label": "Image", "type": { "control": "file-picker", "multiple": false, "extensions": ["png", "jpg", "jpeg", "heic"] } },
+      { "key": "width", "label": "Width", "type": { "control": "number", "min": 1, "step": 1 }, "default": 800, "help": "Pixels" },
+      { "key": "height", "label": "Height", "type": { "control": "number", "min": 1, "step": 1 }, "default": 600, "help": "Pixels" },
+      { "key": "x", "label": "Horizontal offset", "type": { "control": "number", "min": 0, "step": 1 }, "default": 0, "advanced": true },
+      { "key": "y", "label": "Vertical offset", "type": { "control": "number", "min": 0, "step": 1 }, "default": 0, "advanced": true }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "image-convert",
+    "name": "Convert image",
+    "summary": "Convert a local image to PNG, JPEG, or HEIC.",
+    "category": "images",
+    "tier": "core",
+    "icon": "arrow-left-right",
+    "keywords": ["png", "jpeg", "heic", "format"],
+    "form": { "fields": [
+      { "key": "input", "label": "Image", "type": { "control": "file-picker", "multiple": false, "extensions": ["png", "jpg", "jpeg", "heic"] } },
+      { "key": "format", "label": "Output format", "type": { "control": "select", "options": [
+        { "value": "png", "label": "PNG" }, { "value": "jpg", "label": "JPEG" }, { "value": "heic", "label": "HEIC" }
+      ] }, "default": "png" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "image-compress",
+    "name": "Compress image",
+    "summary": "Create a smaller JPEG with a simple quality control.",
+    "category": "images",
+    "tier": "core",
+    "icon": "image",
+    "keywords": ["optimize", "quality", "smaller"],
+    "form": { "fields": [
+      { "key": "input", "label": "Image", "type": { "control": "file-picker", "multiple": false, "extensions": ["png", "jpg", "jpeg", "heic"] } },
+      { "key": "quality", "label": "JPEG quality", "type": { "control": "slider", "min": 1, "max": 100, "step": 1 }, "default": 72, "help": "72 is a balanced default" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "video-crop",
+    "name": "Crop video",
+    "summary": "Crop one region from a clip without opening a timeline.",
+    "category": "media",
+    "tier": "core",
+    "icon": "aperture",
+    "keywords": ["region", "dimensions", "ffmpeg"],
+    "form": { "fields": [
+      { "key": "input", "label": "Video", "type": { "control": "file-picker", "multiple": false, "extensions": ["mp4", "mov", "m4v", "webm"] } },
+      { "key": "width", "label": "Width", "type": { "control": "number", "min": 2, "step": 2 }, "default": 1280, "help": "Pixels" },
+      { "key": "height", "label": "Height", "type": { "control": "number", "min": 2, "step": 2 }, "default": 720, "help": "Pixels" },
+      { "key": "x", "label": "Horizontal offset", "type": { "control": "number", "min": 0, "step": 2 }, "default": 0, "advanced": true },
+      { "key": "y", "label": "Vertical offset", "type": { "control": "number", "min": 0, "step": 2 }, "default": 0, "advanced": true }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "video-to-gif",
+    "name": "Video to GIF",
+    "summary": "Create a capped, document-friendly GIF from a short clip.",
+    "category": "media",
+    "tier": "core",
+    "icon": "play",
+    "keywords": ["gif", "animation", "clip"],
+    "form": { "fields": [
+      { "key": "input", "label": "Video", "type": { "control": "file-picker", "multiple": false, "extensions": ["mp4", "mov", "m4v", "webm"] } },
+      { "key": "start", "label": "Start", "type": { "control": "number", "min": 0, "step": 0.1 }, "default": 0, "help": "Seconds" },
+      { "key": "duration", "label": "Duration", "type": { "control": "number", "min": 0.1, "max": 15, "step": 0.1 }, "default": 8, "help": "Maximum 15 seconds" },
+      { "key": "max_dim", "label": "Longest edge", "type": { "control": "number", "min": 64, "max": 960, "step": 1 }, "default": 720, "advanced": true, "help": "Pixels · capped at 960" },
+      { "key": "fps", "label": "Frame rate", "type": { "control": "number", "min": 1, "max": 15, "step": 1 }, "default": 12, "advanced": true, "help": "Capped at 15 fps" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "video-convert",
+    "name": "Convert video",
+    "summary": "Convert a clip to MP4, MOV, or WebM.",
+    "category": "media",
+    "tier": "core",
+    "icon": "arrow-left-right",
+    "keywords": ["mp4", "mov", "webm", "ffmpeg"],
+    "form": { "fields": [
+      { "key": "input", "label": "Video", "type": { "control": "file-picker", "multiple": false, "extensions": ["mp4", "mov", "m4v", "webm"] } },
+      { "key": "format", "label": "Output format", "type": { "control": "select", "options": [
+        { "value": "mp4", "label": "MP4" }, { "value": "mov", "label": "MOV" }, { "value": "webm", "label": "WebM" }
+      ] }, "default": "mp4" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "video-frame",
+    "name": "Extract video frame",
+    "summary": "Save one precise video frame as a PNG.",
+    "category": "media",
+    "tier": "core",
+    "icon": "camera",
+    "keywords": ["still", "png", "thumbnail"],
+    "form": { "fields": [
+      { "key": "input", "label": "Video", "type": { "control": "file-picker", "multiple": false, "extensions": ["mp4", "mov", "m4v", "webm"] } },
+      { "key": "timestamp", "label": "Timestamp", "type": { "control": "number", "min": 0, "step": 0.1 }, "default": 0, "help": "Seconds" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "screenshot-capture",
+    "name": "Capture screen region",
+    "summary": "Choose a screen region and save it locally or attach it to a note.",
+    "category": "capture",
+    "tier": "core",
+    "icon": "camera",
+    "keywords": ["screenshot", "region", "attach"],
+    "form": { "fields": [
+      { "key": "note_path", "label": "Attach to note", "type": { "control": "text", "placeholder": "Quick capture.md" }, "advanced": true, "help": "Optional path in the local notes vault" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "screenshot-markup",
+    "name": "Mark up screenshot",
+    "summary": "Add an arrow, box, label, pixelation, or true visual redaction.",
+    "category": "capture",
+    "tier": "core",
+    "icon": "wand",
+    "keywords": ["annotate", "arrow", "blur", "redact"],
+    "form": { "fields": [
+      { "key": "input", "label": "Screenshot", "type": { "control": "file-picker", "multiple": false, "extensions": ["png", "jpg", "jpeg", "heic"] } },
+      { "key": "style", "label": "Markup", "type": { "control": "select", "options": [
+        { "value": "arrow", "label": "Arrow" }, { "value": "box", "label": "Outline box" }, { "value": "text", "label": "Text label" }, { "value": "blur", "label": "Pixelate" }, { "value": "redact", "label": "Black redaction" }
+      ] }, "default": "arrow" },
+      { "key": "x", "label": "Left", "type": { "control": "number", "min": 0, "step": 1 }, "default": 40, "help": "Pixels" },
+      { "key": "y", "label": "Top", "type": { "control": "number", "min": 0, "step": 1 }, "default": 40, "help": "Pixels" },
+      { "key": "width", "label": "Width", "type": { "control": "number", "min": 1, "step": 1 }, "default": 320, "help": "Pixels" },
+      { "key": "height", "label": "Height", "type": { "control": "number", "min": 1, "step": 1 }, "default": 160, "help": "Pixels" },
+      { "key": "text", "label": "Label", "type": { "control": "text", "placeholder": "NOTE" }, "advanced": true, "help": "Used by Text label markup" },
+      { "key": "note_path", "label": "Attach to note", "type": { "control": "text", "placeholder": "Quick capture.md" }, "advanced": true, "help": "Optional path in the local notes vault" }
+    ] },
+    "destructive": false,
+    "longRunning": true
   }
 ]

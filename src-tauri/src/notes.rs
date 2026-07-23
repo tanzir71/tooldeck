@@ -296,6 +296,41 @@ impl NotesService {
         self.get(database, relative)
     }
 
+    pub fn attach_file(
+        &self,
+        database: &Database,
+        note_relative: &str,
+        source: &Path,
+    ) -> Result<String, String> {
+        let note_path = self.safe_path(note_relative)?;
+        if !note_path.is_file() {
+            return Err("The note selected for this attachment no longer exists.".into());
+        }
+        if !source.is_file() {
+            return Err("The generated attachment no longer exists.".into());
+        }
+        let attachments = self.vault.join("attachments");
+        fs::create_dir_all(&attachments).map_err(|error| error.to_string())?;
+        let source_name = source
+            .file_name()
+            .and_then(|value| value.to_str())
+            .unwrap_or("capture.png");
+        let destination_name = format!("{}-{source_name}", now_millis());
+        let destination = attachments.join(&destination_name);
+        fs::copy(source, &destination).map_err(|error| error.to_string())?;
+        let mut content = fs::read_to_string(&note_path).map_err(|error| error.to_string())?;
+        content.push_str(&format!(
+            "\n\n![{}](attachments/{destination_name})\n",
+            source
+                .file_stem()
+                .and_then(|value| value.to_str())
+                .unwrap_or("Capture")
+        ));
+        self.write(note_relative, &content)?;
+        self.reindex(database)?;
+        Ok(format!("attachments/{destination_name}"))
+    }
+
     fn safe_path(&self, relative: &str) -> Result<PathBuf, String> {
         let path = Path::new(relative);
         if path.is_absolute()
@@ -641,5 +676,23 @@ mod tests {
             .expect("backlinks");
         assert_eq!(backlinks.len(), 1);
         assert_eq!(backlinks[0].title, "Brief");
+    }
+
+    #[test]
+    fn generated_capture_can_attach_to_a_note() {
+        let directory = tempfile::tempdir().expect("temp");
+        let notes = NotesService::new(directory.path().join("notes")).expect("notes");
+        let database = Database::open_memory().expect("db");
+        let note = notes
+            .create(&database, "Capture target", "blank")
+            .expect("note");
+        let capture = directory.path().join("capture.png");
+        fs::write(&capture, b"local image bytes").expect("capture");
+        let attachment = notes
+            .attach_file(&database, &note.path, &capture)
+            .expect("attachment");
+        assert!(directory.path().join("notes").join(&attachment).is_file());
+        let updated = notes.get(&database, &note.path).expect("updated");
+        assert!(updated.content.contains(&attachment));
     }
 }

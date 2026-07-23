@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 — M6 focused media and capture tools
+
+- Added precise video trim/crop, MP4/MOV/WebM conversion, capped GIF export,
+  and PNG frame extraction through cancellable FFmpeg jobs.
+- Added image crop, resize, PNG/JPEG/HEIC conversion, and JPEG quality
+  compression through the same safe export path.
+- Added interactive macOS region capture.
+- Added offline bitmap screenshot markup with arrow, outline box, text,
+  pixelation, and black-redaction modes.
+- Added optional capture-to-note attachment with Markdown link insertion and
+  vault reindexing.
+- Added adjacent-binary/Homebrew/system resolution for local media and PDF
+  engines in development and packaged layouts.
+- Added real FFmpeg/FFprobe, ImageIO, bitmap markup, and note-attachment
+  fixtures.
+
 ## 0.4.0 — M5 offline OCR and document export
 
 - Added direct Rust FFI to the macOS Vision framework for fast offline image

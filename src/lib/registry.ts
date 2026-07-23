@@ -104,7 +104,16 @@ export async function runTool(
     "ocr-pdf": "ocr-pdf",
     "export-document": "export-document",
     "image-resize": "image-resize",
+    "image-crop": "image-crop",
+    "image-convert": "image-convert",
+    "image-compress": "image-compress",
     "video-trim": "video-trim",
+    "video-crop": "video-crop",
+    "video-to-gif": "video-to-gif",
+    "video-convert": "video-convert",
+    "video-frame": "video-frame",
+    "screenshot-capture": "screenshot-capture",
+    "screenshot-markup": "screenshot-markup",
   };
   const jobKind = jobKinds[id];
   if (jobKind) {
