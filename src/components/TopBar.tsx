@@ -10,6 +10,8 @@ interface TopBarProps {
   theme: ThemePreference;
   onOpenPalette: () => void;
   onOpenOutputCenter: () => void;
+  onOpenSettings: () => void;
+  onOpenTimer: () => void;
   onCycleTheme: () => void;
 }
 
@@ -23,6 +25,8 @@ export function TopBar({
   theme,
   onOpenPalette,
   onOpenOutputCenter,
+  onOpenSettings,
+  onOpenTimer,
   onCycleTheme,
 }: TopBarProps) {
   const [running, setRunning] = useState<TimeEntry | null>(null);
@@ -72,6 +76,7 @@ export function TopBar({
         <button
           className={`timer-pill ${running ? "running" : ""}`}
           type="button"
+          onClick={onOpenTimer}
           aria-label={
             running
               ? `${running.description}, ${formatDuration(
@@ -106,6 +111,7 @@ export function TopBar({
         <button
           className="icon-button"
           type="button"
+          onClick={onOpenSettings}
           aria-label="Open settings"
           title="Settings"
         >

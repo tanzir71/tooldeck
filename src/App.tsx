@@ -6,13 +6,15 @@ import { CategoryScreen } from "./components/CategoryScreen";
 import { CommandPalette } from "./components/CommandPalette";
 import { HomeScreen } from "./components/HomeScreen";
 import { NotesWorkspace } from "./components/NotesWorkspace";
+import { Onboarding } from "./components/Onboarding";
 import { OutputCenter } from "./components/OutputCenter";
 import { Rail } from "./components/Rail";
 import { TimeWorkspace } from "./components/TimeWorkspace";
 import { ToolWorkspace } from "./components/ToolWorkspace";
 import { TopBar } from "./components/TopBar";
 import { WorkflowWorkspace } from "./components/WorkflowWorkspace";
-import { fetchCatalog } from "./lib/registry";
+import { SettingsWorkspace } from "./components/SettingsWorkspace";
+import { fetchCatalog, orderedCategories } from "./lib/registry";
 import { sampleActivity } from "./lib/workflows";
 import { useAppStore } from "./stores/app";
 
@@ -21,10 +23,14 @@ export function App() {
   const category = useAppStore((state) => state.category);
   const selectedToolId = useAppStore((state) => state.selectedToolId);
   const toolPrefill = useAppStore((state) => state.toolPrefill);
+  const settingsOpen = useAppStore((state) => state.settingsOpen);
+  const onboardingOpen = useAppStore((state) => state.onboardingOpen);
+  const persona = useAppStore((state) => state.persona);
   const setCatalog = useAppStore((state) => state.setCatalog);
   const setCatalogError = useAppStore((state) => state.setCatalogError);
   const setPaletteOpen = useAppStore((state) => state.setPaletteOpen);
   const setOutputCenterOpen = useAppStore((state) => state.setOutputCenterOpen);
+  const setSettingsOpen = useAppStore((state) => state.setSettingsOpen);
   const toggleRail = useAppStore((state) => state.toggleRail);
   const setCategory = useAppStore((state) => state.setCategory);
   const theme = useAppStore((state) => state.theme);
@@ -70,19 +76,30 @@ export function App() {
           runButton.click();
         }
       } else if (event.metaKey && /^[1-9]$/.test(event.key)) {
-        const categories = Array.from(
-          new Set(catalog.map((tool) => tool.category)),
-        );
+        const categories = orderedCategories(catalog, persona);
         const nextCategory = categories[Number(event.key) - 1];
         if (nextCategory) {
           event.preventDefault();
           setCategory(nextCategory);
         }
+      } else if (event.key === "Escape") {
+        if (settingsOpen) setSettingsOpen(false);
+        else if (selectedToolId) setCategory(category);
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [catalog, setCategory, setPaletteOpen, toggleRail]);
+  }, [
+    catalog,
+    category,
+    persona,
+    selectedToolId,
+    setCategory,
+    setPaletteOpen,
+    setSettingsOpen,
+    settingsOpen,
+    toggleRail,
+  ]);
 
   useEffect(() => {
     if (!isTauri()) return;
@@ -111,9 +128,16 @@ export function App() {
           theme={theme}
           onOpenPalette={() => setPaletteOpen(true)}
           onOpenOutputCenter={() => setOutputCenterOpen(true)}
+          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenTimer={() => {
+            const timerTool = catalog.find((tool) => tool.id === "timer-start");
+            if (timerTool) useAppStore.getState().selectTool(timerTool);
+          }}
           onCycleTheme={cycleTheme}
         />
-        {selectedTool ? (
+        {settingsOpen ? (
+          <SettingsWorkspace />
+        ) : selectedTool ? (
           selectedTool.id === "note-new" ? (
             <NotesWorkspace />
           ) : selectedTool.id === "timer-start" ? (
@@ -135,6 +159,7 @@ export function App() {
       </div>
       <CommandPalette />
       <OutputCenter />
+      {onboardingOpen && <Onboarding />}
     </div>
   );
 }

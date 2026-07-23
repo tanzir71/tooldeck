@@ -1,17 +1,18 @@
 use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
+use std::sync::{Arc, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use chrono::Local;
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use serde::Serialize;
 
 use crate::db::Database;
 
 #[derive(Clone)]
 pub struct NotesService {
-    vault: PathBuf,
+    vault: Arc<RwLock<PathBuf>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -39,23 +40,103 @@ pub struct NoteDocument {
 impl NotesService {
     pub fn new(vault: PathBuf) -> Result<Self, String> {
         fs::create_dir_all(&vault).map_err(|error| error.to_string())?;
-        Ok(Self { vault })
+        Ok(Self {
+            vault: Arc::new(RwLock::new(vault)),
+        })
+    }
+
+    pub fn vault_path(&self) -> Result<PathBuf, String> {
+        self.vault
+            .read()
+            .map(|value| value.clone())
+            .map_err(|_| "notes vault lock was poisoned".to_string())
+    }
+
+    pub fn switch_vault(&self, database: &Database, vault: PathBuf) -> Result<PathBuf, String> {
+        if !vault.is_absolute() {
+            return Err("Choose an absolute local folder for the notes vault.".into());
+        }
+        fs::create_dir_all(&vault).map_err(|error| error.to_string())?;
+        let probe = vault.join(".tooldeck-write-check");
+        fs::write(&probe, b"local vault")
+            .map_err(|error| format!("Tooldeck cannot write to that folder: {error}"))?;
+        fs::remove_file(&probe).map_err(|error| error.to_string())?;
+        {
+            let mut current = self
+                .vault
+                .write()
+                .map_err(|_| "notes vault lock was poisoned".to_string())?;
+            *current = vault.clone();
+        }
+        database.with_connection(|connection| {
+            connection
+                .execute_batch(
+                    "DELETE FROM notes_fts;
+                     DELETE FROM notes;
+                     DELETE FROM tags;",
+                )
+                .map_err(|error| error.to_string())?;
+            connection
+                .execute(
+                    "INSERT INTO settings(key, value, updated_at)
+                     VALUES ('notes_vault_path', ?1, CURRENT_TIMESTAMP)
+                     ON CONFLICT(key) DO UPDATE SET
+                        value = excluded.value, updated_at = CURRENT_TIMESTAMP",
+                    [vault.to_string_lossy().as_ref()],
+                )
+                .map_err(|error| error.to_string())?;
+            Ok(())
+        })?;
+        self.reindex(database)?;
+        Ok(vault)
     }
 
     pub fn reindex(&self, database: &Database) -> Result<(), String> {
-        let files = markdown_files(&self.vault)?;
+        let vault = self.vault_path()?;
+        let files = markdown_files(&vault)?;
         database.with_connection(|connection| {
+            let mut seen = BTreeSet::new();
             for absolute in files {
                 let relative = absolute
-                    .strip_prefix(&self.vault)
+                    .strip_prefix(&vault)
                     .map_err(|error| error.to_string())?
                     .to_string_lossy()
                     .to_string();
+                seen.insert(relative.clone());
+                let updated_at = file_timestamp(&absolute)?;
+                let indexed_at = connection
+                    .query_row(
+                        "SELECT updated_at FROM notes WHERE path = ?1",
+                        [&relative],
+                        |row| row.get::<_, i64>(0),
+                    )
+                    .optional()
+                    .map_err(|error| error.to_string())?;
+                if indexed_at == Some(updated_at) {
+                    continue;
+                }
                 let Ok(content) = fs::read_to_string(&absolute) else {
                     continue;
                 };
-                let updated_at = file_timestamp(&absolute)?;
                 index_note(connection, &relative, &content, updated_at)?;
+            }
+            let indexed = {
+                let mut statement = connection
+                    .prepare("SELECT path FROM notes")
+                    .map_err(|error| error.to_string())?;
+                let rows = statement
+                    .query_map([], |row| row.get::<_, String>(0))
+                    .map_err(|error| error.to_string())?;
+                rows.map(|row| row.map_err(|error| error.to_string()))
+                    .collect::<Result<Vec<_>, _>>()?
+            };
+            for missing in indexed.into_iter().filter(|path| !seen.contains(path)) {
+                connection
+                    .execute("DELETE FROM notes_fts WHERE path = ?1", [&missing])
+                    .map_err(|error| error.to_string())?;
+                connection
+                    .execute("DELETE FROM notes WHERE path = ?1", [&missing])
+                    .map_err(|error| error.to_string())?;
             }
             Ok(())
         })
@@ -63,6 +144,7 @@ impl NotesService {
 
     pub fn list(&self, database: &Database) -> Result<Vec<NoteSummary>, String> {
         self.reindex(database)?;
+        let vault = self.vault_path()?;
         database.with_connection(|connection| {
             let mut statement = connection
                 .prepare(
@@ -84,7 +166,7 @@ impl NotesService {
             for row in rows {
                 let (path, title, project_id, updated_at) =
                     row.map_err(|error| error.to_string())?;
-                let content = fs::read_to_string(self.vault.join(&path)).unwrap_or_default();
+                let content = fs::read_to_string(vault.join(&path)).unwrap_or_default();
                 notes.push(NoteSummary {
                     path: path.clone(),
                     title,
@@ -120,7 +202,7 @@ impl NotesService {
             title.trim()
         };
         let base = slugify(clean_title);
-        let relative = unique_note_path(&self.vault, &base);
+        let relative = unique_note_path(&self.vault_path()?, &base);
         let body = template_body(clean_title, template);
         self.write(&relative, &body)?;
         self.get(database, &relative)
@@ -129,7 +211,7 @@ impl NotesService {
     pub fn daily(&self, database: &Database) -> Result<NoteDocument, String> {
         let date = Local::now().format("%Y-%m-%d").to_string();
         let relative = format!("{date}.md");
-        if !self.vault.join(&relative).exists() {
+        if !self.vault_path()?.join(&relative).exists() {
             let body = format!("# {date}\n\n## Log\n\n- ");
             self.write(&relative, &body)?;
         }
@@ -229,6 +311,7 @@ impl NotesService {
         relative: &str,
     ) -> Result<Vec<NoteSummary>, String> {
         let target = self.get(database, relative)?;
+        let vault = self.vault_path()?;
         let stem = Path::new(relative)
             .file_stem()
             .and_then(|value| value.to_str())
@@ -256,7 +339,7 @@ impl NotesService {
             for row in rows {
                 let (path, title, project_id, updated_at) =
                     row.map_err(|error| error.to_string())?;
-                let content = fs::read_to_string(self.vault.join(&path)).unwrap_or_default();
+                let content = fs::read_to_string(vault.join(&path)).unwrap_or_default();
                 backlinks.push(NoteSummary {
                     tags: tags_for_path(connection, &path)?,
                     path,
@@ -290,7 +373,7 @@ impl NotesService {
 
     pub fn floating_get(&self, database: &Database) -> Result<NoteDocument, String> {
         let relative = "Quick capture.md";
-        if !self.vault.join(relative).exists() {
+        if !self.vault_path()?.join(relative).exists() {
             self.write(relative, "# Quick capture\n\n")?;
         }
         self.get(database, relative)
@@ -309,7 +392,7 @@ impl NotesService {
         if !source.is_file() {
             return Err("The generated attachment no longer exists.".into());
         }
-        let attachments = self.vault.join("attachments");
+        let attachments = self.vault_path()?.join("attachments");
         fs::create_dir_all(&attachments).map_err(|error| error.to_string())?;
         let source_name = source
             .file_name()
@@ -341,7 +424,7 @@ impl NotesService {
         {
             return Err("invalid note path".into());
         }
-        Ok(self.vault.join(path))
+        Ok(self.vault_path()?.join(path))
     }
 
     fn write(&self, relative: &str, content: &str) -> Result<(), String> {
@@ -694,5 +777,51 @@ mod tests {
         assert!(directory.path().join("notes").join(&attachment).is_file());
         let updated = notes.get(&database, &note.path).expect("updated");
         assert!(updated.content.contains(&attachment));
+    }
+
+    #[test]
+    fn switching_vault_reindexes_without_touching_the_previous_folder() {
+        let first = tempfile::tempdir().expect("first");
+        let second = tempfile::tempdir().expect("second");
+        let database = Database::open_memory().expect("database");
+        let service = NotesService::new(first.path().to_path_buf()).expect("notes");
+        let original = service
+            .create(&database, "Original vault note", "blank")
+            .expect("original");
+        fs::write(
+            second.path().join("Imported.md"),
+            "# Imported\n\nSecond vault",
+        )
+        .expect("fixture");
+
+        service
+            .switch_vault(&database, second.path().to_path_buf())
+            .expect("switch");
+        let notes = service.list(&database).expect("list");
+
+        assert_eq!(notes.len(), 1);
+        assert_eq!(notes[0].title, "Imported");
+        assert!(first.path().join(original.path).is_file());
+    }
+
+    #[test]
+    fn reindex_removes_a_note_deleted_outside_tooldeck() {
+        let directory = tempfile::tempdir().expect("vault");
+        let database = Database::open_memory().expect("database");
+        let service = NotesService::new(directory.path().to_path_buf()).expect("notes");
+        let note = service
+            .create(&database, "Temporary note", "blank")
+            .expect("note");
+        fs::remove_file(directory.path().join(note.path)).expect("external delete");
+
+        assert!(service.list(&database).expect("list").is_empty());
+        let indexed = database
+            .with_connection(|connection| {
+                connection
+                    .query_row("SELECT COUNT(*) FROM notes", [], |row| row.get::<_, i64>(0))
+                    .map_err(|error| error.to_string())
+            })
+            .expect("count");
+        assert_eq!(indexed, 0);
     }
 }

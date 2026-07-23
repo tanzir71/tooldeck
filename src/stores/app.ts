@@ -1,5 +1,15 @@
 import { create } from "zustand";
 
+import {
+  onboardingComplete,
+  saveDensity,
+  saveOnboardingComplete,
+  savePersona,
+  savedDensity,
+  savedPersona,
+  type Density,
+  type Persona,
+} from "../lib/preferences";
 import type { Category, ToolInput, ToolMeta } from "../lib/registry";
 
 export type ThemePreference = "system" | "light" | "dark";
@@ -13,8 +23,12 @@ interface AppState {
   category: Category | "home";
   paletteOpen: boolean;
   outputCenterOpen: boolean;
+  settingsOpen: boolean;
+  onboardingOpen: boolean;
   railCollapsed: boolean;
   theme: ThemePreference;
+  persona: Persona;
+  density: Density;
   recentToolIds: string[];
   setCatalog: (catalog: ToolMeta[]) => void;
   setCatalogError: (message: string) => void;
@@ -22,8 +36,14 @@ interface AppState {
   setCategory: (category: Category | "home") => void;
   setPaletteOpen: (open: boolean) => void;
   setOutputCenterOpen: (open: boolean) => void;
+  setSettingsOpen: (open: boolean) => void;
+  setOnboardingOpen: (open: boolean) => void;
+  finishOnboarding: (persona: Persona) => void;
+  setPersona: (persona: Persona) => void;
+  setDensity: (density: Density) => void;
   toggleRail: () => void;
   cycleTheme: () => void;
+  setTheme: (theme: ThemePreference) => void;
 }
 
 function savedTheme(): ThemePreference {
@@ -52,6 +72,11 @@ function applyTheme(theme: ThemePreference) {
   }
 }
 
+function applyDensity(density: Density) {
+  document.documentElement.dataset.density = density;
+  saveDensity(density);
+}
+
 export const useAppStore = create<AppState>((set, get) => ({
   catalog: [],
   catalogLoading: true,
@@ -61,8 +86,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   category: "home",
   paletteOpen: false,
   outputCenterOpen: false,
+  settingsOpen: false,
+  onboardingOpen: !onboardingComplete(),
   railCollapsed: false,
   theme: savedTheme(),
+  persona: savedPersona(),
+  density: savedDensity(),
   recentToolIds: [],
   setCatalog: (catalog) =>
     set({ catalog, catalogLoading: false, catalogError: null }),
@@ -88,6 +117,21 @@ export const useAppStore = create<AppState>((set, get) => ({
     }),
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
   setOutputCenterOpen: (outputCenterOpen) => set({ outputCenterOpen }),
+  setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
+  setOnboardingOpen: (onboardingOpen) => set({ onboardingOpen }),
+  finishOnboarding: (persona) => {
+    savePersona(persona);
+    saveOnboardingComplete(true);
+    set({ persona, onboardingOpen: false });
+  },
+  setPersona: (persona) => {
+    savePersona(persona);
+    set({ persona });
+  },
+  setDensity: (density) => {
+    applyDensity(density);
+    set({ density });
+  },
   toggleRail: () => set((state) => ({ railCollapsed: !state.railCollapsed })),
   cycleTheme: () => {
     const order: ThemePreference[] = ["system", "light", "dark"];
@@ -95,6 +139,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     applyTheme(theme);
     set({ theme });
   },
+  setTheme: (theme) => {
+    applyTheme(theme);
+    set({ theme });
+  },
 }));
 
 applyTheme(useAppStore.getState().theme);
+applyDensity(useAppStore.getState().density);

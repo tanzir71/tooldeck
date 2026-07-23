@@ -7,11 +7,17 @@ import { Icon } from "./Icon";
 
 interface FieldControlProps {
   field: Field;
+  id?: string;
   value: unknown;
   onChange: (value: unknown) => void;
 }
 
-export function FieldControl({ field, value, onChange }: FieldControlProps) {
+export function FieldControl({
+  field,
+  id,
+  value,
+  onChange,
+}: FieldControlProps) {
   const browserFileInput = useRef<HTMLInputElement>(null);
   const kind = field.type;
 
@@ -40,6 +46,7 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
     return (
       <div className="file-control">
         <button
+          id={id}
           type="button"
           className={`drop-zone ${selected.length > 0 ? "has-file" : ""}`}
           onClick={() => void chooseFile()}
@@ -97,10 +104,12 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
   if (kind.control === "toggle") {
     return (
       <button
+        id={id}
         className={`toggle ${value ? "on" : ""}`}
         type="button"
         role="switch"
         aria-checked={Boolean(value)}
+        aria-label={field.label}
         onClick={() => onChange(!value)}
       >
         <span />
@@ -111,6 +120,7 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
   if (kind.control === "select") {
     return (
       <select
+        id={id}
         value={String(value ?? "")}
         onChange={(event) => onChange(event.target.value)}
       >
@@ -127,6 +137,7 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
     return (
       <div className="slider-row">
         <input
+          id={id}
           type="range"
           value={Number(value ?? kind.min)}
           min={kind.min}
@@ -142,6 +153,7 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
   if (kind.control === "number") {
     return (
       <input
+        id={id}
         type="number"
         value={Number(value ?? 0)}
         min={kind.min}
@@ -155,6 +167,7 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
   if (kind.control === "textarea") {
     return (
       <textarea
+        id={id}
         value={String(value ?? "")}
         placeholder={kind.placeholder}
         rows={6}
@@ -165,6 +178,7 @@ export function FieldControl({ field, value, onChange }: FieldControlProps) {
 
   return (
     <input
+      id={id}
       type="text"
       value={String(value ?? "")}
       placeholder={kind.placeholder}

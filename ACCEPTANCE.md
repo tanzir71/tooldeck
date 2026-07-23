@@ -86,7 +86,21 @@ Evidence:
   - [x] App-linked tracking has an explicit user-triggered permission control
         and degrades to app-name-only detail
   - [x] Every workflow has a tested missing-input recovery path
-- [ ] M8 — Polish pass
+- [x] M8 — Polish pass
+  - [x] Three-step, skippable first run covers profile, a writable Markdown
+        notes folder, and optional permission detail
+  - [x] Freelancer, Designer, Writer, and Developer profiles reorder pinned
+        categories and Home favorites without hiding any searchable tool
+  - [x] Settings provides system/light/dark themes, comfortable/compact
+        density, notes-vault switching, local data status, and setup replay
+  - [x] Privacy matrix documents app names, window titles, idle detection,
+        screenshot capture, and file prompts with their exact degradation
+  - [x] Notes-vault changes preserve the previous folder, validate write
+        access, rebuild the derived index, and persist across app restarts
+  - [x] Vault reconciliation skips unchanged files and removes stale index rows
+        after external deletion
+  - [x] Escape navigation, associated form labels, combobox semantics, visible
+        focus, 28px+ controls, dark parity, and reduced motion are verified
 - [ ] M9 — Signed and notarized package
 
 ## Self-critique rubric
@@ -101,6 +115,7 @@ Evidence:
 | M5        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 | M6        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 | M7        |             4 |          5 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
+| M8        |             5 |          4 |      5 |               5 |             4 |            5 |     5 |           4 | Pass |
 
 M4 evidence:
 
@@ -165,3 +180,22 @@ M7 evidence:
   `artifacts/m7-capture-handoff-dark.png`.
 - `make verify` passes with 39 Rust tests and the full frontend/lint/type/build
   gate.
+
+M8 evidence:
+
+- Native vault fixtures prove folder switching leaves the former Markdown
+  source intact, indexes the selected folder, and reconciles files deleted by
+  another editor.
+- Frontend smoke covers all three onboarding steps, persisted persona choice,
+  Settings entry/exit, and immediate density application.
+- Browser acceptance confirms Writer category pins, five permission rows,
+  28px minimum visible controls, keyboard focus, Escape unwinding, and a
+  computed `0.01ms` animation duration under reduced-motion.
+- Screenshots: `artifacts/m8-onboarding-profile-light.png`,
+  `artifacts/m8-onboarding-vault-light.png`,
+  `artifacts/m8-onboarding-privacy-light.png`, and
+  `artifacts/m8-settings-privacy-dark.png`.
+- Native Tauri launch completes with the configured-vault and permission
+  services active.
+- `make verify` passes with 41 Rust tests, 6 frontend tests, and the full
+  formatting/lint/type/build gate.

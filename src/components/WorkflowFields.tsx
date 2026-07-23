@@ -17,10 +17,11 @@ export function WorkflowFields({
       {fields.map((field) => (
         <div className="field" key={field.key}>
           <div className="field-label">
-            <label>{field.label}</label>
+            <label htmlFor={`workflow-field-${field.key}`}>{field.label}</label>
             {field.help && <span>{field.help}</span>}
           </div>
           <FieldControl
+            id={`workflow-field-${field.key}`}
             field={field}
             value={values[field.key]}
             onChange={(value) => onChange(field.key, value)}

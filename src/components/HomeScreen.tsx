@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { PROFILE_PINS } from "../lib/registry";
 import { useAppStore } from "../stores/app";
 import { Icon } from "./Icon";
 import { ToolCard } from "./ToolCard";
@@ -11,6 +12,7 @@ export function HomeScreen() {
   const selectTool = useAppStore((state) => state.selectTool);
   const setPaletteOpen = useAppStore((state) => state.setPaletteOpen);
   const recentIds = useAppStore((state) => state.recentToolIds);
+  const persona = useAppStore((state) => state.persona);
 
   const recents = useMemo(
     () =>
@@ -19,8 +21,8 @@ export function HomeScreen() {
         .filter((tool) => tool !== undefined),
     [catalog, recentIds],
   );
-  const favorites = ["note-new", "timer-start", "pdf-merge", "image-resize"]
-    .map((id) => catalog.find((tool) => tool.id === id))
+  const favorites = PROFILE_PINS[persona]
+    .map((category) => catalog.find((tool) => tool.category === category))
     .filter((tool) => tool !== undefined);
 
   return (

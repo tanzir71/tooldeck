@@ -1,5 +1,5 @@
 import type { Category } from "../lib/registry";
-import { byCategory } from "../lib/registry";
+import { orderedCategories } from "../lib/registry";
 import { useAppStore } from "../stores/app";
 import { BrandMark } from "./BrandMark";
 import { Icon } from "./Icon";
@@ -26,8 +26,9 @@ export function Rail() {
   const collapsed = useAppStore((state) => state.railCollapsed);
   const setCategory = useAppStore((state) => state.setCategory);
   const toggleRail = useAppStore((state) => state.toggleRail);
-  const groups = byCategory(catalog);
-  const categories = Object.keys(groups) as Category[];
+  const persona = useAppStore((state) => state.persona);
+  const categories = orderedCategories(catalog, persona);
+  const pinnedCount = Math.min(categories.length, persona === "writer" ? 3 : 4);
 
   return (
     <aside className={`rail ${collapsed ? "rail-collapsed" : ""}`}>
@@ -54,20 +55,24 @@ export function Rail() {
             icon: "sparkles",
           };
           return (
-            <button
-              className={`rail-item ${category === item ? "active" : ""}`}
-              type="button"
-              key={item}
-              onClick={() => setCategory(item)}
-              aria-current={category === item ? "page" : undefined}
-              title={collapsed ? presentation.label : undefined}
-            >
-              <Icon name={presentation.icon} size={16} />
-              {!collapsed && <span>{presentation.label}</span>}
-              {!collapsed && index < 9 && (
-                <span className="rail-shortcut">⌘{index + 1}</span>
+            <div className="rail-category-slot" key={item}>
+              {index === pinnedCount && !collapsed && (
+                <p className="rail-label rail-more-label">More</p>
               )}
-            </button>
+              <button
+                className={`rail-item ${category === item ? "active" : ""}`}
+                type="button"
+                onClick={() => setCategory(item)}
+                aria-current={category === item ? "page" : undefined}
+                title={collapsed ? presentation.label : undefined}
+              >
+                <Icon name={presentation.icon} size={16} />
+                {!collapsed && <span>{presentation.label}</span>}
+                {!collapsed && index < 9 && (
+                  <span className="rail-shortcut">⌘{index + 1}</span>
+                )}
+              </button>
+            </div>
           );
         })}
       </nav>

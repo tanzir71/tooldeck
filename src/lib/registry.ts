@@ -1,5 +1,6 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 
+import type { Persona } from "./preferences";
 import { runJob } from "./jobs";
 
 export type Category =
@@ -177,9 +178,23 @@ export function byCategory(
   return groups;
 }
 
-export const PROFILE_PINS: Record<string, Category[]> = {
+export const PROFILE_PINS: Record<Persona, Category[]> = {
   freelancer: ["time", "create", "notes", "pdf"],
   designer: ["images", "capture", "media", "notes"],
   writer: ["notes", "create", "pdf"],
   developer: ["dev", "files", "notes", "capture"],
 };
+
+export function orderedCategories(
+  catalog: ToolMeta[],
+  persona: Persona,
+): Category[] {
+  const categories = Array.from(new Set(catalog.map((tool) => tool.category)));
+  const pinned = PROFILE_PINS[persona].filter((category) =>
+    categories.includes(category),
+  );
+  return [
+    ...pinned,
+    ...categories.filter((category) => !pinned.includes(category)),
+  ];
+}

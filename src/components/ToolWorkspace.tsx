@@ -94,10 +94,13 @@ export function ToolWorkspace({ tool, prefill }: ToolWorkspaceProps) {
         {defaultFields.map((field) => (
           <div className="field" key={field.key}>
             <div className="field-label">
-              <label>{field.label}</label>
+              <label htmlFor={`field-${tool.id}-${field.key}`}>
+                {field.label}
+              </label>
               {field.help && <span>{field.help}</span>}
             </div>
             <FieldControl
+              id={`field-${tool.id}-${field.key}`}
               field={field}
               value={values[field.key]}
               onChange={(value) =>
@@ -132,10 +135,13 @@ export function ToolWorkspace({ tool, prefill }: ToolWorkspaceProps) {
                     key={field.key}
                   >
                     <div className="field-label">
-                      <label>{field.label}</label>
+                      <label htmlFor={`field-${tool.id}-${field.key}`}>
+                        {field.label}
+                      </label>
                       {field.help && <span>{field.help}</span>}
                     </div>
                     <FieldControl
+                      id={`field-${tool.id}-${field.key}`}
                       field={field}
                       value={values[field.key]}
                       onChange={(value) =>

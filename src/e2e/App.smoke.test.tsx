@@ -31,9 +31,15 @@ beforeEach(() => {
     catalogLoading: true,
     catalogError: null,
     selectedToolId: null,
+    toolPrefill: null,
     category: "home",
     paletteOpen: false,
+    outputCenterOpen: false,
+    settingsOpen: false,
+    onboardingOpen: false,
     railCollapsed: false,
+    persona: "freelancer",
+    density: "comfortable",
     recentToolIds: [],
   });
 });
@@ -51,7 +57,7 @@ describe("M0 shell smoke", () => {
       await screen.findByRole("heading", { name: "Good morning." }),
     ).toBeInTheDocument();
     expect(
-      await screen.findByRole("button", { name: /Resize image/ }),
+      await screen.findByRole("button", { name: /Export document/ }),
     ).toBeInTheDocument();
 
     fireEvent.keyDown(window, { key: "k", metaKey: true });
@@ -71,6 +77,52 @@ describe("M0 shell smoke", () => {
     fireEvent.keyDown(search, { key: "Enter" });
     expect(
       await screen.findByRole("heading", { name: "Resize image" }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("M8 onboarding and settings", () => {
+  it("completes the three quiet onboarding steps with a selected profile", async () => {
+    useAppStore.setState({ onboardingOpen: true });
+    render(<App />);
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Your work stays on this Mac.",
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: /Writer/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      screen.getByRole("heading", { name: "Pick your notes folder." }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      await screen.findByRole("heading", {
+        name: "Add detail only when you want it.",
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open Tooldeck" }));
+
+    expect(useAppStore.getState().persona).toBe("writer");
+    expect(useAppStore.getState().onboardingOpen).toBe(false);
+  });
+
+  it("opens settings and applies compact density immediately", async () => {
+    render(<App />);
+    await screen.findByRole("heading", { name: "Good morning." });
+    fireEvent.click(screen.getByRole("button", { name: "Open settings" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Settings" }),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Density"), {
+      target: { value: "compact" },
+    });
+    expect(document.documentElement.dataset.density).toBe("compact");
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(
+      screen.getByRole("heading", { name: "Good morning." }),
     ).toBeInTheDocument();
   });
 });

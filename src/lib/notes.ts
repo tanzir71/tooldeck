@@ -29,6 +29,7 @@ const previewNotes: NoteDocument[] = [
     updatedAt: Date.now(),
   },
 ];
+let previewVault = "/Users/you/Documents/Tooldeck Notes";
 
 function summarize(note: NoteDocument): NoteSummary {
   const preview =
@@ -161,4 +162,15 @@ export async function getFloatingNote(): Promise<NoteDocument> {
     (note) => note.path === "Quick capture.md",
   );
   return existing ?? createNote("Quick capture", "blank");
+}
+
+export async function getNotesVault(): Promise<string> {
+  if (isTauri()) return invoke<string>("notes_vault_get");
+  return previewVault;
+}
+
+export async function setNotesVault(path: string): Promise<string> {
+  if (isTauri()) return invoke<string>("notes_vault_set", { path });
+  previewVault = path;
+  return previewVault;
 }

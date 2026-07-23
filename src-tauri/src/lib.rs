@@ -124,6 +124,21 @@ fn note_link_project(
 }
 
 #[tauri::command]
+fn notes_vault_get(notes: tauri::State<'_, NotesService>) -> Result<String, String> {
+    Ok(notes.vault_path()?.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn notes_vault_set(
+    notes: tauri::State<'_, NotesService>,
+    database: tauri::State<'_, Database>,
+    path: String,
+) -> Result<String, String> {
+    let vault = notes.switch_vault(&database, path.into())?;
+    Ok(vault.to_string_lossy().to_string())
+}
+
+#[tauri::command]
 fn floating_note_get(
     notes: tauri::State<'_, NotesService>,
     database: tauri::State<'_, Database>,
@@ -494,7 +509,19 @@ pub fn run() {
             let data_root = app.path().data_dir()?.join("Tooldeck");
             fs::create_dir_all(&data_root)?;
             let database = Database::open(data_root.join("tooldeck.sqlite3"))?;
-            let notes = NotesService::new(data_root.join("notes"))?;
+            let default_vault = data_root.join("notes");
+            let notes_vault = database.with_connection(|connection| {
+                connection
+                    .query_row(
+                        "SELECT value FROM settings WHERE key = 'notes_vault_path'",
+                        [],
+                        |row| row.get::<_, String>(0),
+                    )
+                    .optional()
+                    .map(|path| path.map(Into::into).unwrap_or(default_vault))
+                    .map_err(|error| error.to_string())
+            })?;
+            let notes = NotesService::new(notes_vault)?;
             let jobs = JobRunner::new(data_root.join("exports"))?;
             let safety = SafetyService::new(data_root.join("exports"))?;
             notes.reindex(&database)?;
@@ -563,6 +590,8 @@ pub fn run() {
             notes_search,
             note_backlinks,
             note_link_project,
+            notes_vault_get,
+            notes_vault_set,
             floating_note_get,
             projects_list,
             project_create,

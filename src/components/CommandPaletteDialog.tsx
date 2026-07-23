@@ -44,6 +44,9 @@ export function CommandPaletteDialog() {
           <Icon name="search" size={18} />
           <input
             ref={inputRef}
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="true"
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.7.0 — M8 onboarding, privacy, and polish
+
+- Added a skippable three-step first run for profile choice, writable Markdown
+  vault selection, and optional macOS permissions.
+- Added profile-aware category pins and Home favorites for Freelancer,
+  Designer, Writer, and Developer surfaces while preserving global search.
+- Added a complete Settings workspace with theme, density, notes vault,
+  privacy matrix, local data location, and setup replay.
+- Added runtime notes-vault switching with write validation, persisted restart
+  behavior, source-folder preservation, and derived-index rebuilding.
+- Made Markdown reconciliation incremental for unchanged files and stale-index
+  cleanup after external deletion.
+- Added associated form labels, combobox semantics, functional timer/settings
+  controls, Escape navigation, compact density, and responsive onboarding.
+- Verified reduced motion, keyboard focus, control hit targets, light/dark
+  parity, onboarding, settings, and privacy degradation states.
+
 ## 0.6.0 — M7 connected workflows
 
 - Added a typed workflow planner with explicit job, next-tool, completed, and
