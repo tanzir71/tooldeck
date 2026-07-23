@@ -6,6 +6,7 @@ import { CategoryScreen } from "./components/CategoryScreen";
 import { CommandPalette } from "./components/CommandPalette";
 import { HomeScreen } from "./components/HomeScreen";
 import { NotesWorkspace } from "./components/NotesWorkspace";
+import { OutputCenter } from "./components/OutputCenter";
 import { Rail } from "./components/Rail";
 import { TimeWorkspace } from "./components/TimeWorkspace";
 import { ToolWorkspace } from "./components/ToolWorkspace";
@@ -20,6 +21,7 @@ export function App() {
   const setCatalog = useAppStore((state) => state.setCatalog);
   const setCatalogError = useAppStore((state) => state.setCatalogError);
   const setPaletteOpen = useAppStore((state) => state.setPaletteOpen);
+  const setOutputCenterOpen = useAppStore((state) => state.setOutputCenterOpen);
   const toggleRail = useAppStore((state) => state.toggleRail);
   const setCategory = useAppStore((state) => state.setCategory);
   const theme = useAppStore((state) => state.theme);
@@ -97,6 +99,7 @@ export function App() {
         <TopBar
           theme={theme}
           onOpenPalette={() => setPaletteOpen(true)}
+          onOpenOutputCenter={() => setOutputCenterOpen(true)}
           onCycleTheme={cycleTheme}
         />
         {selectedTool ? (
@@ -114,6 +117,7 @@ export function App() {
         )}
       </div>
       <CommandPalette />
+      <OutputCenter />
     </div>
   );
 }

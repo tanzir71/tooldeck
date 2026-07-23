@@ -29,6 +29,7 @@ function initialValues(tool: ToolMeta): ToolInput {
 
 export function ToolWorkspace({ tool }: ToolWorkspaceProps) {
   const setCategory = useAppStore((state) => state.setCategory);
+  const setOutputCenterOpen = useAppStore((state) => state.setOutputCenterOpen);
   const [values, setValues] = useState<ToolInput>(() => initialValues(tool));
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [runState, setRunState] = useState<RunState>({ kind: "idle" });
@@ -53,6 +54,7 @@ export function ToolWorkspace({ tool }: ToolWorkspaceProps) {
     try {
       const outcome = await runTool(tool.id, values);
       setRunState({ kind: "success", outcome });
+      if (outcome.kind === "job") setOutputCenterOpen(true);
     } catch (error) {
       setRunState({
         kind: "error",
@@ -151,7 +153,9 @@ export function ToolWorkspace({ tool }: ToolWorkspaceProps) {
           <div className="inline-result success" role="status">
             <Icon name="circle-check" size={17} />
             <div>
-              <strong>Finished</strong>
+              <strong>
+                {runState.outcome.kind === "job" ? "Processing" : "Finished"}
+              </strong>
               <span>
                 {runState.outcome.kind === "done"
                   ? runState.outcome.message

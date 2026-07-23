@@ -1,0 +1,3 @@
+PUBLIC PROJECT BRIEF
+SECRET-CODE-7419
+This fixture verifies local PDF text extraction and flattened redaction.

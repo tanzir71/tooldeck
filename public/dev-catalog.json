@@ -58,6 +58,179 @@
     "longRunning": true
   },
   {
+    "id": "pdf-extract-text",
+    "name": "Extract PDF text",
+    "summary": "Pull selectable text from a PDF into a local text file.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "file-output",
+    "keywords": ["copy", "plain text", "document", "pdftotext"],
+    "form": {
+      "fields": [
+        {
+          "key": "input",
+          "label": "PDF file",
+          "type": {
+            "control": "file-picker",
+            "multiple": false,
+            "extensions": ["pdf"]
+          },
+          "help": "Text PDFs only · scans are routed to OCR"
+        }
+      ]
+    },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-split",
+    "name": "Split PDF",
+    "summary": "Create one independent PDF per page.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "files",
+    "keywords": ["separate", "pages", "unbundle"],
+    "form": { "fields": [{ "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } }] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-reorder",
+    "name": "Reorder PDF pages",
+    "summary": "Build a new PDF in exactly the page order you specify.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "arrow-left-right",
+    "keywords": ["sort", "pages", "arrange"],
+    "form": { "fields": [
+      { "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } },
+      { "key": "order", "label": "New page order", "type": { "control": "text", "placeholder": "3, 1, 2, 4-7" }, "help": "Comma-separated pages and ranges" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-delete-pages",
+    "name": "Remove PDF pages",
+    "summary": "Create a copy without the pages you list.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "files",
+    "keywords": ["delete", "pages", "remove"],
+    "form": { "fields": [
+      { "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } },
+      { "key": "pages", "label": "Pages to remove", "type": { "control": "text", "placeholder": "2, 5-7" }, "help": "The original stays untouched" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-rotate",
+    "name": "Rotate PDF pages",
+    "summary": "Rotate every page into a new flattened PDF.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "aperture",
+    "keywords": ["turn", "orientation", "pages"],
+    "form": { "fields": [
+      { "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } },
+      { "key": "degrees", "label": "Rotation", "type": { "control": "select", "options": [
+        { "value": "90", "label": "90° clockwise" },
+        { "value": "180", "label": "180°" },
+        { "value": "270", "label": "270° clockwise" }
+      ] }, "default": "90" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-compress",
+    "name": "Compress PDF",
+    "summary": "Make a compact shareable copy with balanced screen quality.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "file-output",
+    "keywords": ["shrink", "size", "optimize"],
+    "form": { "fields": [{ "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } }] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-to-images",
+    "name": "PDF to images",
+    "summary": "Render each page as a crisp PNG or JPEG.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "images",
+    "keywords": ["render", "png", "jpeg"],
+    "form": { "fields": [
+      { "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } },
+      { "key": "format", "label": "Image format", "type": { "control": "select", "options": [
+        { "value": "png", "label": "PNG" },
+        { "value": "jpg", "label": "JPEG" }
+      ] }, "default": "png" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "images-to-pdf",
+    "name": "Images to PDF",
+    "summary": "Combine selected images into one ordered PDF.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "images",
+    "keywords": ["photos", "scan", "combine"],
+    "form": { "fields": [{ "key": "input", "label": "Images", "type": { "control": "file-picker", "multiple": true, "extensions": ["png", "jpg", "jpeg", "heic", "webp"] }, "help": "Files are combined in the selected order" }] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-watermark",
+    "name": "Watermark PDF",
+    "summary": "Flatten a visible text watermark into every page.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "captions",
+    "keywords": ["stamp", "confidential", "text"],
+    "form": { "fields": [
+      { "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } },
+      { "key": "text", "label": "Watermark", "type": { "control": "text", "placeholder": "CONFIDENTIAL" } }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-page-numbers",
+    "name": "Number PDF pages",
+    "summary": "Add centered page numbers to a flattened copy.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "captions",
+    "keywords": ["bates", "number", "footer"],
+    "form": { "fields": [{ "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } }] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "pdf-redact",
+    "name": "Redact PDF region",
+    "summary": "Permanently remove one rectangular region from every page.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "shield",
+    "keywords": ["remove text", "privacy", "black box"],
+    "form": { "fields": [
+      { "key": "input", "label": "PDF file", "type": { "control": "file-picker", "multiple": false, "extensions": ["pdf"] } },
+      { "key": "x", "label": "Left edge", "type": { "control": "number", "min": 0, "max": 100, "step": 1 }, "default": 10, "help": "Percent from left" },
+      { "key": "y", "label": "Top edge", "type": { "control": "number", "min": 0, "max": 100, "step": 1 }, "default": 10, "help": "Percent from top" },
+      { "key": "width", "label": "Width", "type": { "control": "number", "min": 0, "max": 100, "step": 1 }, "default": 35, "help": "Percent of page" },
+      { "key": "height", "label": "Height", "type": { "control": "number", "min": 0, "max": 100, "step": 1 }, "default": 8, "help": "Percent of page" }
+    ] },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
     "id": "image-resize",
     "name": "Resize image",
     "summary": "Resize by longest edge without touching the original.",
@@ -99,5 +272,51 @@
     },
     "destructive": false,
     "longRunning": false
+  },
+  {
+    "id": "video-trim",
+    "name": "Trim video",
+    "summary": "Keep one precise range without opening a timeline editor.",
+    "category": "media",
+    "tier": "core",
+    "icon": "aperture",
+    "keywords": ["clip", "cut", "ffmpeg", "duration"],
+    "form": {
+      "fields": [
+        {
+          "key": "input",
+          "label": "Video",
+          "type": {
+            "control": "file-picker",
+            "multiple": false,
+            "extensions": ["mp4", "mov", "m4v", "webm"]
+          }
+        },
+        {
+          "key": "start",
+          "label": "Start",
+          "type": {
+            "control": "number",
+            "min": 0,
+            "step": 0.1
+          },
+          "default": 0,
+          "help": "Seconds"
+        },
+        {
+          "key": "end",
+          "label": "End",
+          "type": {
+            "control": "number",
+            "min": 0.1,
+            "step": 0.1
+          },
+          "default": 8,
+          "help": "Seconds · must be after start"
+        }
+      ]
+    },
+    "destructive": false,
+    "longRunning": true
   }
 ]

@@ -19,7 +19,9 @@ export function HomeScreen() {
         .filter((tool) => tool !== undefined),
     [catalog, recentIds],
   );
-  const favorites = catalog.slice(0, 4);
+  const favorites = ["note-new", "timer-start", "pdf-merge", "image-resize"]
+    .map((id) => catalog.find((tool) => tool.id === id))
+    .filter((tool) => tool !== undefined);
 
   return (
     <main className="workspace home-screen">

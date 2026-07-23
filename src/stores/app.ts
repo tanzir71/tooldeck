@@ -11,6 +11,7 @@ interface AppState {
   selectedToolId: string | null;
   category: Category | "home";
   paletteOpen: boolean;
+  outputCenterOpen: boolean;
   railCollapsed: boolean;
   theme: ThemePreference;
   recentToolIds: string[];
@@ -19,6 +20,7 @@ interface AppState {
   selectTool: (tool: ToolMeta) => void;
   setCategory: (category: Category | "home") => void;
   setPaletteOpen: (open: boolean) => void;
+  setOutputCenterOpen: (open: boolean) => void;
   toggleRail: () => void;
   cycleTheme: () => void;
 }
@@ -56,6 +58,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedToolId: null,
   category: "home",
   paletteOpen: false,
+  outputCenterOpen: false,
   railCollapsed: false,
   theme: savedTheme(),
   recentToolIds: [],
@@ -80,6 +83,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       paletteOpen: false,
     }),
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
+  setOutputCenterOpen: (outputCenterOpen) => set({ outputCenterOpen }),
   toggleRail: () => set((state) => ({ railCollapsed: !state.railCollapsed })),
   cycleTheme: () => {
     const order: ThemePreference[] = ["system", "light", "dark"];

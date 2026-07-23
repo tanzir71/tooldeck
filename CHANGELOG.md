@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.0 — M4 local PDF and Output Center
+
+- Added a persistent, cancellable local job runner with progress and
+  human-readable completion/failure states.
+- Added the Output Center with output history, live progress, cancellation,
+  dark mode, empty/error states, and a Safety tab.
+- Added scoped undo: generated exports are moved into a recoverable internal
+  trash and user-selected originals are never mutated.
+- Added PDF merge, split, reorder, page removal, rotation, compression,
+  PDF-to-images, images-to-PDF, text extraction, watermarking, page numbering,
+  and flattened rectangular redaction.
+- Added real local PDF fixtures covering merge, split, source preservation, and
+  removal of redacted text from the output text layer.
+- Added migration 3 for undo status, workflow definitions, and app-activity
+  sampling groundwork.
+
 ## 0.2.0 — M1–M3 connected context
 
 - Added a plain-Markdown notes vault with atomic writes and external-edit

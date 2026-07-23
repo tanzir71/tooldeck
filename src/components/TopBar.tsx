@@ -9,6 +9,7 @@ import { Shortcut } from "./Shortcut";
 interface TopBarProps {
   theme: ThemePreference;
   onOpenPalette: () => void;
+  onOpenOutputCenter: () => void;
   onCycleTheme: () => void;
 }
 
@@ -18,7 +19,12 @@ const themeIcon: Record<ThemePreference, string> = {
   dark: "moon",
 };
 
-export function TopBar({ theme, onOpenPalette, onCycleTheme }: TopBarProps) {
+export function TopBar({
+  theme,
+  onOpenPalette,
+  onOpenOutputCenter,
+  onCycleTheme,
+}: TopBarProps) {
   const [running, setRunning] = useState<TimeEntry | null>(null);
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
 
@@ -54,6 +60,15 @@ export function TopBar({ theme, onOpenPalette, onCycleTheme }: TopBarProps) {
         <Shortcut>⌘K</Shortcut>
       </button>
       <div className="topbar-actions">
+        <button
+          className="icon-button"
+          type="button"
+          onClick={onOpenOutputCenter}
+          aria-label="Open Output Center"
+          title="Output Center"
+        >
+          <Icon name="inbox" size={15} />
+        </button>
         <button
           className={`timer-pill ${running ? "running" : ""}`}
           type="button"

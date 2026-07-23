@@ -1,5 +1,7 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 
+import { runJob } from "./jobs";
+
 export type Category =
   | "notes"
   | "time"
@@ -84,6 +86,27 @@ export async function runTool(
   id: string,
   input: ToolInput,
 ): Promise<ToolOutcome> {
+  const jobKinds: Record<string, string> = {
+    "pdf-merge": "pdf-merge",
+    "pdf-extract-text": "pdf-extract-text",
+    "pdf-split": "pdf-split",
+    "pdf-reorder": "pdf-reorder",
+    "pdf-delete-pages": "pdf-delete-pages",
+    "pdf-rotate": "pdf-rotate",
+    "pdf-compress": "pdf-compress",
+    "pdf-to-images": "pdf-to-images",
+    "images-to-pdf": "images-to-pdf",
+    "pdf-watermark": "pdf-watermark",
+    "pdf-page-numbers": "pdf-page-numbers",
+    "pdf-redact": "pdf-redact",
+    "image-resize": "image-resize",
+    "video-trim": "video-trim",
+  };
+  const jobKind = jobKinds[id];
+  if (jobKind) {
+    const job = await runJob(jobKind, input);
+    return { kind: "job", jobId: job.id };
+  }
   if (isTauri()) {
     return invoke<ToolOutcome>("tool_run", { id, input });
   }

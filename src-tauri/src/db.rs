@@ -6,7 +6,8 @@ use serde::Serialize;
 
 const MIGRATION_001: &str = include_str!("../migrations/001_initial.sql");
 const MIGRATION_002: &str = include_str!("../migrations/002_notes_time.sql");
-const MIGRATIONS: &[(i64, &str)] = &[(1, MIGRATION_001), (2, MIGRATION_002)];
+const MIGRATION_003: &str = include_str!("../migrations/003_safety_workflows.sql");
+const MIGRATIONS: &[(i64, &str)] = &[(1, MIGRATION_001), (2, MIGRATION_002), (3, MIGRATION_003)];
 
 pub struct Database {
     path: PathBuf,
@@ -121,7 +122,7 @@ mod tests {
     #[test]
     fn first_migration_is_idempotent() {
         let database = Database::open_memory().expect("in-memory database opens");
-        assert_eq!(database.status().expect("status").schema_version, 2);
+        assert_eq!(database.status().expect("status").schema_version, 3);
         let connection = database.connection.lock().expect("database lock");
         Database::migrate(&connection).expect("migration reapplies");
         let count: i64 = connection
@@ -129,7 +130,7 @@ mod tests {
                 row.get(0)
             })
             .expect("migration count");
-        assert_eq!(count, 2);
+        assert_eq!(count, 3);
     }
 
     #[test]

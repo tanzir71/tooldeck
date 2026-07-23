@@ -1,14 +1,18 @@
 mod db;
+mod jobs;
 mod notes;
 mod platform;
 mod registry;
+mod safety;
 mod time;
 
 use std::fs;
 
 use db::{Database, DbStatus};
+use jobs::{JobRecord, JobRunner};
 use notes::{NoteDocument, NoteSummary, NotesService};
 use registry::{Registry, ToolCtx, ToolInput, ToolMeta, ToolOutcome};
+use safety::{SafetyRecord, SafetyService};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager, PhysicalPosition, Position, Runtime, WebviewWindow};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -249,6 +253,44 @@ fn show_floating_note(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn job_run(
+    app: tauri::AppHandle,
+    runner: tauri::State<'_, JobRunner>,
+    kind: String,
+    input: serde_json::Value,
+) -> Result<JobRecord, String> {
+    runner.enqueue(app, kind, input)
+}
+
+#[tauri::command]
+fn jobs_list(database: tauri::State<'_, Database>) -> Result<Vec<JobRecord>, String> {
+    jobs::list(&database)
+}
+
+#[tauri::command]
+fn job_cancel(
+    app: tauri::AppHandle,
+    runner: tauri::State<'_, JobRunner>,
+    id: String,
+) -> Result<(), String> {
+    runner.cancel(&app, &id)
+}
+
+#[tauri::command]
+fn safety_list(database: tauri::State<'_, Database>) -> Result<Vec<SafetyRecord>, String> {
+    SafetyService::list(&database)
+}
+
+#[tauri::command]
+fn safety_undo(
+    database: tauri::State<'_, Database>,
+    safety: tauri::State<'_, SafetyService>,
+    id: i64,
+) -> Result<(), String> {
+    safety.undo(&database, id)
+}
+
+#[tauri::command]
 fn idle_seconds() -> f64 {
     platform::idle_seconds()
 }
@@ -322,9 +364,13 @@ pub fn run() {
             fs::create_dir_all(&data_root)?;
             let database = Database::open(data_root.join("tooldeck.sqlite3"))?;
             let notes = NotesService::new(data_root.join("notes"))?;
+            let jobs = JobRunner::new(data_root.join("exports"))?;
+            let safety = SafetyService::new(data_root.join("exports"))?;
             notes.reindex(&database)?;
             app.manage(database);
             app.manage(notes);
+            app.manage(jobs);
+            app.manage(safety);
 
             let palette_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::Space);
             let note_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyN);
@@ -398,7 +444,12 @@ pub fn run() {
             timer_merge,
             timer_reconcile_idle,
             idle_seconds,
-            show_floating_note
+            show_floating_note,
+            job_run,
+            jobs_list,
+            job_cancel,
+            safety_list,
+            safety_undo
         ])
         .run(tauri::generate_context!())
         .expect("error while running Tooldeck");

@@ -43,7 +43,17 @@ Evidence:
 - [x] M3 — Links and floating note
   - [x] Wiki-link index, backlinks, and note-to-project links
   - [x] Frameless always-on-top quick note with pin, opacity, and ⌥N
-- [ ] M4 — PDF tools, jobs, and safety
+- [x] M4 — PDF tools, jobs, and safety
+  - [x] Merge, split, reorder, remove, rotate, compress, PDF↔images, and
+        selectable-text extraction produce new exports
+  - [x] Flattened watermark, page numbering, and rectangular redaction run
+        locally; the fixture test confirms redacted text is absent from the
+        resulting text layer
+  - [x] Persistent jobs expose progress, cancellation, failure, and completed
+        states without blocking the UI
+  - [x] Output Center has output and Safety tabs, including scoped undo into a
+        recoverable internal trash
+  - [x] Originals are never passed as an output target
 - [ ] M5 — OCR and export engine
 - [ ] M6 — Media micro-tools
 - [ ] M7 — Connected workflows
@@ -58,3 +68,19 @@ Evidence:
 | M1        |             4 |          4 |      4 |               4 |             4 |            4 |     5 |           4 | Pass |
 | M2        |             4 |          4 |      4 |               4 |             4 |            5 |     5 |           4 | Pass |
 | M3        |             4 |          4 |      4 |               4 |             4 |            4 |     4 |           4 | Pass |
+| M4        |             4 |          4 |      4 |               4 |             4 |            5 |     4 |           4 | Pass |
+
+M4 evidence:
+
+- Native Tauri launch applied migration 3 to the existing local database.
+- The fixture gate creates real PDFs locally, merges and splits them, and
+  verifies the source bytes remain unchanged.
+- The redaction gate rasterizes and flattens a source containing
+  `SECRET-CODE-7419`, then confirms `pdftotext` cannot recover that string.
+- Safety tests reject paths outside Tooldeck exports and verify undo moves only
+  a generated output.
+- Screenshots: `artifacts/m4-output-center-light.png` and
+  `artifacts/m4-pdf-redact-dark.png`.
+- `make verify` passes with 25 Rust tests, 4 frontend tests, Clippy with
+  warnings denied, ESLint, TypeScript, formatting, and the production web
+  build.
