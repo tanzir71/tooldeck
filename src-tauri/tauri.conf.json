@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Tooldeck",
+  "version": "0.1.0",
+  "identifier": "com.tooldeck.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Tooldeck",
+        "width": 1040,
+        "height": 720,
+        "minWidth": 760,
+        "minHeight": 540,
+        "center": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "backgroundColor": "#f2f2ef"
+      },
+      {
+        "label": "menu-bar",
+        "title": "Tooldeck",
+        "width": 310,
+        "height": 382,
+        "visible": false,
+        "resizable": false,
+        "maximizable": false,
+        "minimizable": false,
+        "closable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "backgroundColor": "#f2f2ef"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost blob: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "category": "Productivity",
+    "copyright": "Copyright © 2026 Tooldeck",
+    "shortDescription": "Local-first productivity tools for macOS",
+    "longDescription": "Private notes, time tracking, documents, and focused file tools in one local-first macOS workspace.",
+    "macOS": {
+      "minimumSystemVersion": "14.0",
+      "hardenedRuntime": true,
+      "signingIdentity": "-"
+    }
+  }
+}

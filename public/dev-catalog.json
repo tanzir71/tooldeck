@@ -1,0 +1,148 @@
+[
+  {
+    "id": "note-new",
+    "name": "New note",
+    "summary": "Capture a thought in a local Markdown note.",
+    "category": "notes",
+    "tier": "core",
+    "icon": "square-pen",
+    "keywords": ["write", "markdown", "capture", "daily"],
+    "form": {
+      "fields": [
+        {
+          "key": "title",
+          "label": "Note title",
+          "type": {
+            "control": "text",
+            "placeholder": "Untitled note"
+          },
+          "default": ""
+        },
+        {
+          "key": "template",
+          "label": "Start from",
+          "type": {
+            "control": "select",
+            "options": [
+              { "value": "blank", "label": "Blank note" },
+              { "value": "meeting", "label": "Meeting notes" },
+              { "value": "project", "label": "Project brief" }
+            ]
+          },
+          "default": "blank",
+          "advanced": true
+        }
+      ]
+    },
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "timer-start",
+    "name": "Start timer",
+    "summary": "Start a local timer and keep your current context attached.",
+    "category": "time",
+    "tier": "core",
+    "icon": "timer",
+    "keywords": ["track", "hours", "project", "billable"],
+    "form": {
+      "fields": [
+        {
+          "key": "description",
+          "label": "What are you working on?",
+          "type": {
+            "control": "text",
+            "placeholder": "Describe this focus block"
+          },
+          "default": ""
+        },
+        {
+          "key": "billable",
+          "label": "Billable",
+          "type": { "control": "toggle" },
+          "default": true,
+          "advanced": true
+        }
+      ]
+    },
+    "destructive": false,
+    "longRunning": false
+  },
+  {
+    "id": "pdf-merge",
+    "name": "Merge PDFs",
+    "summary": "Combine PDFs in order while preserving every original.",
+    "category": "pdf",
+    "tier": "core",
+    "icon": "files",
+    "keywords": ["combine", "join", "document"],
+    "form": {
+      "fields": [
+        {
+          "key": "input",
+          "label": "PDF files",
+          "type": {
+            "control": "file-picker",
+            "multiple": true,
+            "extensions": ["pdf"]
+          }
+        },
+        {
+          "key": "filename",
+          "label": "Output name",
+          "type": {
+            "control": "text",
+            "placeholder": "Merged document.pdf"
+          },
+          "default": "Merged document.pdf",
+          "advanced": true
+        }
+      ]
+    },
+    "destructive": false,
+    "longRunning": true
+  },
+  {
+    "id": "image-resize",
+    "name": "Resize image",
+    "summary": "Resize by longest edge without touching the original.",
+    "category": "images",
+    "tier": "core",
+    "icon": "image",
+    "keywords": ["scale", "dimensions", "shrink", "photo"],
+    "form": {
+      "fields": [
+        {
+          "key": "input",
+          "label": "Image",
+          "type": {
+            "control": "file-picker",
+            "multiple": false,
+            "extensions": ["png", "jpg", "jpeg", "webp", "heic"]
+          }
+        },
+        {
+          "key": "max_dim",
+          "label": "Longest edge",
+          "type": {
+            "control": "number",
+            "min": 1,
+            "max": 20000,
+            "step": 1
+          },
+          "default": 1600,
+          "help": "Pixels · aspect ratio stays locked"
+        },
+        {
+          "key": "keep_metadata",
+          "label": "Keep image metadata",
+          "type": { "control": "toggle" },
+          "default": false,
+          "advanced": true
+        }
+      ]
+    },
+    "destructive": false,
+    "longRunning": false
+  }
+]
